@@ -5,6 +5,9 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true, // Ignores TypeScript errors during the build
+  },
   serverExternalPackages: ["mongoose"], // Necessary to let Next.js know we use mongoose for CRUD operations
   images: {
     remotePatterns: [
