@@ -1,13 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true, // Ignores TypeScript errors during the build
-  },
   serverExternalPackages: ["mongoose"], // Necessary to let Next.js know we use mongoose for CRUD operations
   images: {
     remotePatterns: [
@@ -28,6 +20,12 @@ const nextConfig = {
         hostname: "placehold.co",
       },
     ],
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true, // Ignores TypeScript errors during the build
   },
 };
 

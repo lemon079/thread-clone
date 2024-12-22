@@ -7,29 +7,27 @@ import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 import { removeQuotes } from "../utils";
 
-interface Params {
-  text: string;
-  author: string;
-  communityId: string | null;
-  path: string;
-}
-
 export async function createThread({
   text,
   author,
   communityId,
   path,
-}: Params) {
+}: {
+  text: string;
+  author: string;
+  communityId: string | null;
+  path: string;
+}) {
   author = removeQuotes(author);
   connectToDB();
   try {
     const createdThread = await Thread.create({
       text,
       author,
-      community: communityId ? communityId : null,
+      community: communityId,
     });
 
-    const user = await User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
       author,
       {
         $push: {
@@ -38,8 +36,6 @@ export async function createThread({
       },
       { new: true }
     );
-
-    console.log("User: ", user);
 
     revalidatePath(path);
   } catch (error: any) {
