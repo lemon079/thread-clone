@@ -30,7 +30,7 @@ interface Thread {
 }
 
 const page = async ({ params }: { params: { id: string } }) => {
-    const { id } = params;
+    const id = params.id;
     if (!id) return null;
 
     const user = await currentUser();
