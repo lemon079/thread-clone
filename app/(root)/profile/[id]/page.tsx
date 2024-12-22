@@ -1,3 +1,4 @@
+import { PageProps } from "@/app/types/pageProp";
 import ProfileHeader from "@/components/shared/ProfileHeader";
 import ThreadsTab from "@/components/shared/ThreadsTab";
 import { profileTabs } from "@/constants";
@@ -7,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
-const page = async ({ params }: { params: { id: string } }) => {
+
+const page = async ({ params }: PageProps) => {
     const id = params.id;
     if (!id) return null;
 

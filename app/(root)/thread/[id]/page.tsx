@@ -1,3 +1,4 @@
+import { PageProps } from "@/app/types/pageProp";
 import ThreadCard from "@/components/cards/ThreadCard";
 import Comment from "@/components/forms/Comment";
 import { fetchThreadById } from "@/lib/actions/thread.actions";
@@ -29,7 +30,7 @@ interface Thread {
     isComment?: boolean;
 }
 
-const page = async ({ params }: { params: { id: string } }) => {
+const page = async ({ params }: PageProps) => {
     const id = params.id;
     if (!id) return null;
 
