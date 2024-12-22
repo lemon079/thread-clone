@@ -8,7 +8,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 
 const page = async ({ params }: { params: { id: string } }) => {
-    const { id } = await params;
+    const { id } = params;
     if (!id) return null;
 
     const user = await currentUser();
