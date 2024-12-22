@@ -6,3 +6,8 @@ export const UserValidation = z.object({
   username: z.string().min(3).max(30),
   bio: z.string().min(3).max(1000),
 });
+
+
+export const SearchValidation = z.object({
+  searchString: z.string(),
+})

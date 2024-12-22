@@ -6,8 +6,7 @@ import React from 'react'
 
 interface Props {
     id: string;
-    currentUserId: string;
-    parentId: string | null;
+    parentId: string | null; // if yes, means this thread is a comment
     content: string;
     author: {
         id: string,
@@ -28,7 +27,7 @@ interface Props {
     isComment?: boolean;
 }
 
-const ThreadCard = ({ id, currentUserId, parentId, content, author, community, createdAt, comments, isComment }: Props) => {
+const ThreadCard = ({ id, parentId, content, author, community, createdAt, comments, isComment }: Props) => {
 
     return (
         <article className={`flex flex-col w-full rounded-xl ${isComment ? "px-0 py-2 xs:px-7" : "p-7 bg-dark-2"}`}>

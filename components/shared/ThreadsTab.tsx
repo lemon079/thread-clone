@@ -8,8 +8,8 @@ interface Props {
     accountType: string;
 }
 
-const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
-    const user = await fetchUserThreads(currentUserId);
+const ThreadsTab = async ({ accountId, accountType }: Props) => {
+    const user = await fetchUserThreads(accountId);
 
     return (
         <section className="mt-9 flex flex-col gap-10">
@@ -17,7 +17,6 @@ const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
                 <ThreadCard
                     key={thread._id}
                     id={thread._id}
-                    currentUserId={user?.id}
                     parentId={thread.parentId}
                     content={thread.text}
                     author={
