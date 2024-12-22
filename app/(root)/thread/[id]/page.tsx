@@ -5,6 +5,30 @@ import { fetchUser } from "@/lib/actions/user.actions";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+interface Thread {
+    _id: string;
+    currentUserId: string;
+    parentId: string | null;
+    text: string;
+    author: {
+        id: string,
+        name: string,
+        image: string,
+    };
+    community: {
+        id: string,
+        name: string,
+        image: string
+    } | null;
+    createdAt: string;
+    children: {
+        author: {
+            image: string;
+        }
+    }[];
+    isComment?: boolean;
+}
+
 const page = async ({ params }: { params: { id: string } }) => {
     const { id } = await params;
     if (!id) return null;
@@ -43,7 +67,7 @@ const page = async ({ params }: { params: { id: string } }) => {
 
                 {/* fetching comments of a thread that we see at the moment */}
                 <div className="mt-10">
-                    {thread.children.map((commentThread: any) => (
+                    {thread && thread.children.map((commentThread: Thread) => (
                         <ThreadCard
                             key={commentThread._id}
                             id={commentThread._id}

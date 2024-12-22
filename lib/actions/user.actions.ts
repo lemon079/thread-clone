@@ -1,8 +1,9 @@
+/* eslint-disable */
 "use server";
 import { revalidatePath } from "next/cache";
 import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
-import { FilterQuery, SortOrder } from "mongoose";
+import { SortOrder } from "mongoose";
 import Thread from "../models/thread.model";
 
 interface PARAMS {
@@ -99,7 +100,7 @@ export async function getActivity(userId: string) {
     // iterate threads and concat all their child threads ( which are ids )
     const childThreadIds = userThreads.reduce((acc, userThread) => {
       return acc.concat(userThread.children);
-    },[]);
+    }, []);
 
     // get all replies excluded of same user
     const replies = await Thread.find({

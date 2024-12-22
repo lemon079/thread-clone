@@ -5,10 +5,10 @@ const page = async () => {
   const user = await currentUser();
 
   const userData = {
-    id: user?.id,
-    name: user?.firstName,
-    username: user?.username,
-    image: user?.imageUrl,
+    id: user?.id || '',
+    name: user?.firstName || '',
+    username: user?.username || '',
+    image: user?.imageUrl || '',
   }
 
   return (

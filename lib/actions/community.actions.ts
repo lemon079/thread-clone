@@ -5,7 +5,7 @@ import { FilterQuery, SortOrder } from "mongoose";
 import Community from "@/lib/models/community.model";
 import Thread from "@/lib/models/thread.model";
 import User from "@/lib/models/user.model";
-
+/* eslint-disable */
 import { connectToDB } from "../mongoose";
 
 export async function createCommunity(

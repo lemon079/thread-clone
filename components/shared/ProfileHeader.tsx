@@ -10,7 +10,8 @@ interface Props {
     bio: string;
 }
 
-const ProfileHeader = ({ accountId, authUserId, name, username, imageUrl, bio }: Props) => {
+const ProfileHeader = ({ name, username, imageUrl, bio }: Props) => {
+
     return (
         <div className='flex w-full flex-col justify-start'>
             <div className="flex items-center justify-between">

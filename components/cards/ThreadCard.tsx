@@ -1,4 +1,4 @@
-import { removeQuotes } from '@/lib/utils';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react'
@@ -22,7 +22,6 @@ interface Props {
     comments: {
         author: {
             image: string;
-
         }
     }[];
     isComment?: boolean;

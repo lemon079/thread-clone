@@ -1,7 +1,7 @@
 "use client"
 import { CommentValidation } from '@/lib/validations/thread';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '../ui/form';
 import { Button } from '../ui/button';
 import { z } from 'zod';
 import { Input } from '../ui/input';

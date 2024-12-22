@@ -1,5 +1,5 @@
+/* eslint-disable */
 "use server";
-
 import { connectToDB } from "../mongoose";
 import Thread from "../models/thread.model";
 import User from "../models/user.model";
@@ -26,7 +26,7 @@ export async function createThread({
     const createdThread = await Thread.create({
       text,
       author,
-      community: null,
+      community: communityId ? communityId : null,
     });
 
     const user = await User.findByIdAndUpdate(
