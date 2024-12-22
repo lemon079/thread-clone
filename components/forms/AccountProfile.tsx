@@ -28,11 +28,10 @@ interface PROPS {
         username: string,
         image: string;
     };
-    btnTitle: string
 }
 
 
-const AccountProfile = ({ user, btnTitle }: PROPS) => {
+const AccountProfile = ({ user }: PROPS) => {
     const [files, setFiles] = useState<File[]>([]);
     const { startUpload } = useUploadThing("imageUploader");
 

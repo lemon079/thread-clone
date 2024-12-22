@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   serverExternalPackages: ["mongoose"], // Necessary to let Next.js know we use mongoose for CRUD operations
   images: {
     remotePatterns: [
@@ -20,9 +23,6 @@ const nextConfig = {
         hostname: "placehold.co",
       },
     ],
-  },
-  typescript: {
-    ignoreBuildErrors: true,
   },
 };
 
