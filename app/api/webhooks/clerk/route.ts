@@ -49,14 +49,12 @@ export async function POST(req: Request) {
 
   // Do something with payload
   // For this guide, log payload to console
-  const { id } = evt.data;
   const eventType = evt.type;
-  console.log("Received event type:", eventType);
-  console.log("SIGNING_SECRET exists:", SIGNING_SECRET);
-
   if (eventType === "organization.created") {
-    console.log("organization payload:", payload);
+    console.log(evt.data);
   }
+
+  console.log(evt);
 
   return new Response("Webhook received", { status: 200 });
 }
