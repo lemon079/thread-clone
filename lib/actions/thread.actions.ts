@@ -6,6 +6,7 @@ import User from "../models/user.model";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 import { removeQuotes } from "../utils";
+import Community from "../models/community.model";
 
 export async function createThread({
   text,
@@ -20,6 +21,7 @@ export async function createThread({
 }) {
   author = removeQuotes(author);
   connectToDB();
+
   try {
     const createdThread = await Thread.create({
       text,

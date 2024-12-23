@@ -38,11 +38,11 @@ const PostThread = ({ userId }: { userId: string }) => {
         await createThread({
             text: values.thread,
             author: userId,
-            communityId: organization ? organization.id : null,
+            communityId: null,
             path: pathname
         });
 
-        router.push('/');
+        // router.push('/');
     }
 
     return (
