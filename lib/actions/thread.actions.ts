@@ -46,8 +46,8 @@ export async function createThread({
     );
 
     // push the thread to the community's threads array
-    if (communityId) {
-      await Community.findByIdAndUpdate(author, {
+    if (community) {
+      await Community.findByIdAndUpdate(communityId, {
         $push: {
           threads: createdThread._id,
         },
