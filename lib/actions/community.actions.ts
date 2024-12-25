@@ -5,6 +5,7 @@ import Thread from "@/lib/models/thread.model";
 import User from "@/lib/models/user.model";
 /* eslint-disable */
 import { connectToDB } from "../mongoose";
+import { revalidatePath } from "next/cache";
 
 export async function createCommunity(
   id: string,
@@ -289,6 +290,7 @@ export async function deleteCommunity(communityId: string | undefined) {
 
     await Promise.all(updateUserPromises);
 
+    revalidatePath("/");
     return deletedCommunity;
   } catch (error) {
     console.error("Error deleting community: ", error);
