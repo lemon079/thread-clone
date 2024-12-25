@@ -271,26 +271,29 @@ export async function deleteCommunity(communityId: string | undefined) {
       id: communityId,
     });
 
-    const deletedCommunityObjectId = deletedCommunity._id;
+    if (!deletedCommunity) throw new Error("Community not found");
 
-    if (!deletedCommunity) {
-      throw new Error("Community not found");
-    }
+    const deletedCommunityObjectId = deletedCommunity._id;
 
     // Delete all threads associated with the community
     await Thread.deleteMany({ community: deletedCommunityObjectId });
 
     // Find all users who are part of the community
-    const communityUsers = await User.find({ communities: deletedCommunityObjectId });
+    const communityUsers = await User.find({
+      communities: deletedCommunityObjectId,
+    });
+
     console.log(communityUsers);
 
     // Remove the community from the 'communities' array for each user
-    const updateUserPromises = communityUsers.map((user) => {
-      user.communities.pull(deletedCommunityObjectId);
-      return user.save();
-    });
-
-    await Promise.all(updateUserPromises);
+    await User.bulkWrite([
+      {
+        updateMany: {
+          filter: { communities: deletedCommunityObjectId },
+          update: { $pull: { communities: deletedCommunityObjectId } },
+        },
+      },
+    ]);
 
     return deletedCommunity;
   } catch (error) {
