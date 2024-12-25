@@ -9,20 +9,7 @@ import RightSidebar from "@/components/shared/RightSidebar";
 
 export const metadata: Metadata = {
   title: "Threads",
-  description: "A Next.js 14 Threads Application",
-  openGraph: {
-    title: "Your Project Name",
-    description: "A Next.js 14 Threads Application",
-    images: [
-      {
-        url: "/capture.jpg", // Path to your image in the public folder
-        width: 1200,
-        height: 630,
-        alt: "Thread App Preview",
-      },
-    ],
-  },
-
+  description: "A Next.js 15 Threads Application"
 }
 
 const inter = Inter({ subsets: ["latin"] });

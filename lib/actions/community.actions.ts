@@ -289,7 +289,8 @@ export async function deleteCommunity(communityId: string | undefined) {
     });
 
     await Promise.all(updateUserPromises);
-
+    
+    // revalidate the homepage
     revalidatePath("/");
     return deletedCommunity;
   } catch (error) {
