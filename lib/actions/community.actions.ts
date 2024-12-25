@@ -1,7 +1,5 @@
 "use server";
-
 import { FilterQuery, SortOrder } from "mongoose";
-
 import Community from "@/lib/models/community.model";
 import Thread from "@/lib/models/thread.model";
 import User from "@/lib/models/user.model";
@@ -11,16 +9,14 @@ import { connectToDB } from "../mongoose";
 export async function createCommunity(
   id: string,
   name: string,
-  username: string,
-  image: string,
-  bio: string,
-  createdById: string // Change the parameter name to reflect it's an id
+  image: string | undefined,
+  createdBy: string | undefined
 ) {
   try {
     connectToDB();
 
     // Find the user with the provided unique id
-    const user = await User.findOne({ id: createdById });
+    const user = await User.findOne({ id: createdBy });
 
     if (!user) {
       throw new Error("User not found"); // Handle the case if the user with the id is not found
@@ -29,9 +25,7 @@ export async function createCommunity(
     const newCommunity = new Community({
       id,
       name,
-      username,
       image,
-      bio,
       createdBy: user._id, // Use the mongoose ID of the user
     });
 
