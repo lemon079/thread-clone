@@ -47,17 +47,11 @@ export async function createThread({
 
     // push the thread to the community's threads array
     if (community) {
-      const result = await Community.findByIdAndUpdate(
-        communityId,
-        {
-          $push: {
-            threads: createdThread._id,
-          },
+      await Community.findByIdAndUpdate(community._id, {
+        $push: {
+          threads: createdThread._id,
         },
-        { new: true }
-      );
-
-      console.log(result);
+      });
     }
 
     revalidatePath(path);
