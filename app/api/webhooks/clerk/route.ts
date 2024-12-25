@@ -57,10 +57,13 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   if (eventType === "organization.created") {
-    const { id, name, image_url, created_by } = evt.data;
-    const community = await createCommunity(id, name, image_url, created_by);
+    const { id: communityId, name, image_url, created_by } = evt.data;
+    const community = await createCommunity(communityId, name, image_url, created_by);
 
-    return NextResponse.json({ message: "Community created" });
+    return NextResponse.json({
+      message: "Community created",
+      community: community,
+    });
   }
 
   if (eventType === "organization.deleted") {
@@ -68,7 +71,10 @@ export async function POST(req: Request) {
     const deletedCommunity = await deleteCommunity(communityId);
     console.log(deletedCommunity);
 
-    return NextResponse.json({ message: "Community deleted" });
+    return NextResponse.json({
+      message: "Community deleted",
+      deletedCommunity: deletedCommunity,
+    });
   }
 
   return new Response("Webhook received", { status: 200 });

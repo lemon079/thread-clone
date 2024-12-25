@@ -83,7 +83,8 @@ export async function fetchThread(pageNumber = 1, pageSize = 20) {
           select: "_id name parentId image",
         },
       })
-      .populate("author");
+      .populate("author")
+      .populate("community");
 
     const totalThreadCount = await Thread.countDocuments({
       parentId: { $in: [null, undefined] },
@@ -92,7 +93,6 @@ export async function fetchThread(pageNumber = 1, pageSize = 20) {
     const threads = await threadsQuery.exec();
 
     const isNext = totalThreadCount > skipAmount + threads.length; // return true or false;
-
     return { threads, isNext };
   } catch (error: any) {
     console.log(`Error fetching Threads ${error.message}`);

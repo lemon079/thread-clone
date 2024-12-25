@@ -49,7 +49,6 @@ const PostThread = ({ userId }: { userId: string }) => {
         <>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="mt-10 flex flex-col justify-start gap-10">
-
                     <FormField
                         control={form.control}
                         name="thread"

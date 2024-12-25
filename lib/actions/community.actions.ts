@@ -20,14 +20,12 @@ export async function createCommunity(
 
     if (!user) throw new Error("User not found"); // Handle the case if the user with the id is not found
 
-    const newCommunity = new Community({
+    const createdCommunity = await Community.create({
       id,
       name,
       image,
       createdBy: user._id, // Use the mongoose ID of the user
     });
-
-    const createdCommunity = await newCommunity.save();
 
     // Update User model
     user.communities.push(createdCommunity._id);
@@ -282,8 +280,6 @@ export async function deleteCommunity(communityId: string | undefined) {
     const communityUsers = await User.find({
       communities: deletedCommunityObjectId,
     });
-
-    console.log(communityUsers);
 
     // Remove the community from the 'communities' array for each user
     const updateUserPromises = communityUsers.map((user) => {
