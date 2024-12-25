@@ -109,7 +109,8 @@ export async function fetchThreadById(threadId: string) {
         path: "children",
         model: Thread,
         populate: "author",
-      });
+      })
+      .populate("community");
 
     return thread;
   } catch (error: any) {
@@ -163,14 +164,20 @@ export async function fetchUserThreads(userId: string) {
     const threads = await User.findOne({ id: userId }).populate({
       path: "threads",
       model: Thread,
-      populate: {
-        path: "children",
-        model: Thread,
-        populate: {
-          path: "author",
-          model: User,
+      populate: [
+        {
+          path: "children",
+          model: Thread,
+          populate: {
+            path: "author",
+            model: User,
+          },
         },
-      },
+        {
+          path: "community",
+          model: Community,
+        },
+      ],
     });
 
     return threads;
