@@ -38,7 +38,7 @@ const PostThread = ({ userId }: { userId: string }) => {
         await createThread({
             text: values.thread,
             author: userId,
-            communityId: null,
+            communityId: organization?.id ? organization.id : null,
             path: pathname
         });
 

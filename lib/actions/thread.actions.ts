@@ -6,6 +6,7 @@ import User from "../models/user.model";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 import { removeQuotes } from "../utils";
+import Community from "../models/community.model";
 
 export async function createThread({
   text,
@@ -28,6 +29,7 @@ export async function createThread({
       community: communityId,
     });
 
+    // push the thread to the user's threads array
     await User.findByIdAndUpdate(
       author,
       {
@@ -37,7 +39,16 @@ export async function createThread({
       },
       { new: true }
     );
-    
+
+    // push the thread to the community's threads array
+    if (!communityId) {
+      await Community.findByIdAndUpdate(author, {
+        $push: {
+          threads: createdThread._id,
+        },
+      });
+    }
+
     revalidatePath(path);
   } catch (error: any) {
     console.log(`Error Creating Thread ${error.message}`);
