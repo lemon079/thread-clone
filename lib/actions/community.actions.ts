@@ -286,14 +286,12 @@ export async function deleteCommunity(communityId: string | undefined) {
     console.log(communityUsers);
 
     // Remove the community from the 'communities' array for each user
-    await User.bulkWrite([
-      {
-        updateMany: {
-          filter: { communities: deletedCommunityObjectId },
-          update: { $pull: { communities: deletedCommunityObjectId } },
-        },
-      },
-    ]);
+    const updateUserPromises = communityUsers.map((user) => {
+      user.communities.pull(deletedCommunityObjectId);
+      return user.save();
+    });
+
+    await Promise.all(updateUserPromises);
 
     return deletedCommunity;
   } catch (error) {

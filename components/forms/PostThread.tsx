@@ -42,7 +42,7 @@ const PostThread = ({ userId }: { userId: string }) => {
             path: pathname
         });
 
-        // router.push('/');
+        router.push('/');
     }
 
     return (
