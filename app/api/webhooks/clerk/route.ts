@@ -1,7 +1,10 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
-import { createCommunity } from "@/lib/actions/community.actions";
+import {
+  createCommunity,
+  deleteCommunity,
+} from "@/lib/actions/community.actions";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -56,9 +59,16 @@ export async function POST(req: Request) {
   if (eventType === "organization.created") {
     const { id, name, image_url, created_by } = evt.data;
     const community = await createCommunity(id, name, image_url, created_by);
-    console.log(community);
 
     return NextResponse.json({ message: "Community created" });
+  }
+
+  if (eventType === "organization.deleted") {
+    const { id: communityId } = evt.data;
+    const deletedCommunity = await deleteCommunity(communityId);
+    console.log(deletedCommunity);
+
+    return NextResponse.json({ message: "Community deleted" });
   }
 
   return new Response("Webhook received", { status: 200 });

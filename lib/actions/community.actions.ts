@@ -18,9 +18,7 @@ export async function createCommunity(
     // Find the user with the provided unique id
     const user = await User.findOne({ id: createdBy });
 
-    if (!user) {
-      throw new Error("User not found"); // Handle the case if the user with the id is not found
-    }
+    if (!user) throw new Error("User not found"); // Handle the case if the user with the id is not found
 
     const newCommunity = new Community({
       id,
@@ -263,7 +261,7 @@ export async function updateCommunityInfo(
   }
 }
 
-export async function deleteCommunity(communityId: string) {
+export async function deleteCommunity(communityId: string | undefined) {
   try {
     connectToDB();
 

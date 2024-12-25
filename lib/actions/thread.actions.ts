@@ -6,7 +6,6 @@ import User from "../models/user.model";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 import { removeQuotes } from "../utils";
-import Community from "../models/community.model";
 
 export async function createThread({
   text,
@@ -38,7 +37,7 @@ export async function createThread({
       },
       { new: true }
     );
-
+    
     revalidatePath(path);
   } catch (error: any) {
     console.log(`Error Creating Thread ${error.message}`);
