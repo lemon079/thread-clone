@@ -246,7 +246,8 @@ export async function updateCommunityInfo(
     // Find the community by its _id and update the information
     const updatedCommunity = await Community.findOneAndUpdate(
       { id: communityId },
-      { name, username, image }
+      { name, username, image },
+      { new: true }
     );
 
     if (!updatedCommunity) {
@@ -270,19 +271,22 @@ export async function deleteCommunity(communityId: string | undefined) {
       id: communityId,
     });
 
+    const deletedCommunityObjectId = deletedCommunity._id;
+
     if (!deletedCommunity) {
       throw new Error("Community not found");
     }
 
     // Delete all threads associated with the community
-    await Thread.deleteMany({ community: communityId });
+    await Thread.deleteMany({ community: deletedCommunityObjectId });
 
     // Find all users who are part of the community
-    const communityUsers = await User.find({ communities: communityId });
+    const communityUsers = await User.find({ communities: deletedCommunityObjectId });
+    console.log(communityUsers);
 
     // Remove the community from the 'communities' array for each user
     const updateUserPromises = communityUsers.map((user) => {
-      user.communities.pull(communityId);
+      user.communities.pull(deletedCommunityObjectId);
       return user.save();
     });
 

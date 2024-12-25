@@ -23,10 +23,13 @@ const communitySchema = new Schema(
         ref: "Thread",
       },
     ],
-    members: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
+    members: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
     createdAt: {
       type: Date,
       default: Date.now,
