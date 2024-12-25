@@ -23,37 +23,38 @@ export async function createThread({
   connectToDB();
 
   try {
-    // Find the community by its 'id'
-    const community = await Community.findOne({
-      id: communityId,
-    });
-    console.log(community)
+    let createdThread;
 
-    const createdThread = await Thread.create({
-      text,
-      author,
-      community: community._id,
-    });
+    if (communityId) {
+      // Find the community by its 'id'
+      const community = await Community.findOne({ id: communityId });
 
-    // push the thread to the user's threads array
-    await User.findByIdAndUpdate(
-      author,
-      {
-        $push: {
-          threads: createdThread._id,
-        },
-      },
-      { new: true }
-    );
+      // Create the thread with the community reference
+      createdThread = await Thread.create({
+        text,
+        author,
+        community: community?._id || null,
+      });
 
-    // push the thread to the community's threads array
-    if (community) {
+      // Push the thread to the community's threads array
       await Community.findByIdAndUpdate(community._id, {
-        $push: {
-          threads: createdThread._id,
-        },
+        $push: { threads: createdThread._id },
+      });
+    } else {
+      // Create the thread without community reference
+      createdThread = await Thread.create({
+        text,
+        author,
+        community: null,
       });
     }
+
+    // Push the thread to the user's threads array
+    await User.findByIdAndUpdate(
+      author,
+      { $push: { threads: createdThread._id } },
+      { new: true }
+    );
 
     revalidatePath(path);
   } catch (error: any) {
