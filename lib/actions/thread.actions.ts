@@ -110,7 +110,8 @@ export async function fetchThreadById(threadId: string) {
         model: Thread,
         populate: "author",
       })
-      .populate("community");
+      .populate("community")
+      .sort({ createdAt: "desc" });
 
     return thread;
   } catch (error: any) {
