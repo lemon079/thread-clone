@@ -2,6 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { createCommunity } from "@/lib/actions/community.actions";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
@@ -53,8 +54,10 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   if (eventType === "organization.created") {
-    const { id, name, image_url, created_by} = evt.data;
+    const { id, name, image_url, created_by } = evt.data;
     await createCommunity(id, name, image_url, created_by);
+
+    return NextResponse.json({ message: "Community created" });
   }
 
   return new Response("Webhook received", { status: 200 });
