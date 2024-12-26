@@ -10,7 +10,7 @@ interface Props {
     name: string;
     username: string;
     imageUrl: string;
-    personType: string;
+    personType?: string;
 }
 
 const UserCard = ({ id, name, username, imageUrl, personType }: Props) => {

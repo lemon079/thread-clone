@@ -26,6 +26,7 @@ export async function createCommunity(
       name,
       image,
       createdBy: user._id, // Use the mongoose ID of the user
+      admin: user._id,
     });
 
     // Update User model
@@ -44,14 +45,17 @@ export async function fetchCommunityDetails(id: string) {
   try {
     connectToDB();
 
-    const communityDetails = await Community.findOne({ id }).populate([
-      "createdBy",
-      {
-        path: "members",
-        model: User,
-        select: "name username image _id id",
-      },
-    ]);
+    const communityDetails = await Community.findOne({ id })
+      .populate({ path: "createdBy", model: User, select: "name image id" })
+      .populate({
+        path: "threads",
+        model: Thread,
+        populate: {
+          path: "author",
+          model: User,
+          select: "name image id",
+        },
+      });
 
     return communityDetails;
   } catch (error) {
@@ -61,38 +65,38 @@ export async function fetchCommunityDetails(id: string) {
   }
 }
 
-export async function fetchCommunityPosts(id: string) {
-  try {
-    connectToDB();
+// export async function fetchCommunityThreads(id: string) {
+//   try {
+//     connectToDB();
 
-    const communityPosts = await Community.findById(id).populate({
-      path: "threads",
-      model: Thread,
-      populate: [
-        {
-          path: "author",
-          model: User,
-          select: "name image id", // Select the "name" and "_id" fields from the "User" model
-        },
-        {
-          path: "children",
-          model: Thread,
-          populate: {
-            path: "author",
-            model: User,
-            select: "image _id", // Select the "name" and "_id" fields from the "User" model
-          },
-        },
-      ],
-    });
+//     const communityPosts = await Community.findById(id).populate({
+//       path: "threads",
+//       model: Thread,
+//       populate: [
+//         {
+//           path: "author",
+//           model: User,
+//           select: "name image id", // Select the "name" and "_id" fields from the "User" model
+//         },
+//         {
+//           path: "children",
+//           model: Thread,
+//           populate: {
+//             path: "author",
+//             model: User,
+//             select: "image _id", // Select the "name" and "_id" fields from the "User" model
+//           },
+//         },
+//       ],
+//     });
 
-    return communityPosts;
-  } catch (error) {
-    // Handle any errors
-    console.error("Error fetching community posts:", error);
-    throw error;
-  }
-}
+//     return communityPosts;
+//   } catch (error) {
+//     // Handle any errors
+//     console.error("Error fetching community posts:", error);
+//     throw error;
+//   }
+// }
 
 export async function fetchCommunities({
   searchString = "",
@@ -289,7 +293,7 @@ export async function deleteCommunity(communityId: string | undefined) {
     });
 
     await Promise.all(updateUserPromises);
-    
+
     // revalidate the homepage
     revalidatePath("/");
     return deletedCommunity;

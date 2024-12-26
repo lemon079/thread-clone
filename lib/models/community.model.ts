@@ -29,7 +29,10 @@ const communitySchema = new Schema(
         ref: "User",
       },
     ],
-
+    admin: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     createdAt: {
       type: Date,
       default: Date.now,

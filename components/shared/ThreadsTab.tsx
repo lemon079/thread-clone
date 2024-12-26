@@ -1,5 +1,4 @@
 import { fetchUserThreads } from "@/lib/actions/thread.actions";
-import React from "react";
 import ThreadCard from "../cards/ThreadCard";
 
 interface Props {

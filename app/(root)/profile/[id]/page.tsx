@@ -15,13 +15,13 @@ const page = async ({ params }: PageProps) => {
 
     const user = await currentUser();
     const userInfo = await fetchUser(id);
-
     if (!userInfo.onboarded) redirect('/onboarding');
+
     return (
         <section>
             <ProfileHeader
                 accountId={userInfo.id}
-                authUserId={user?.id || ""} // passed "" to avoid typo
+                authUserId={user?.id || ""}
                 name={userInfo.name}
                 username={userInfo.username}
                 imageUrl={userInfo.image}
@@ -40,16 +40,19 @@ const page = async ({ params }: PageProps) => {
                             </TabsTrigger>
                         ))}
                     </TabsList>
-                    {profileTabs.map(tab => (
-                        <TabsContent key={`content-${tab.label}`} value={tab.value} className="w-full text-light-1">
-                            <ThreadsTab
-                                currentUserId={user?.id || ""}
-                                accountId={userInfo.id}
-                                accountType="User"
-                            />
-
-                        </TabsContent>
-                    ))}
+                    <TabsContent value="threads" className="w-full text-light-1">
+                        <ThreadsTab
+                            currentUserId={user?.id || ""}
+                            accountId={userInfo.id}
+                            accountType="User"
+                        />
+                    </TabsContent>
+                    <TabsContent value="replies" className="w-full text-light-1">
+                        replies
+                    </TabsContent>
+                    <TabsContent value="tagged" className="w-full text-light-1">
+                        {/* Add the component or content for the "Tagged" tab here */}
+                    </TabsContent>
                 </Tabs>
             </div>
         </section>

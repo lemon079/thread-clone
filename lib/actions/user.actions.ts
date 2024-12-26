@@ -45,8 +45,14 @@ export async function updateUser({
 export async function fetchUser(userId: string) {
   try {
     connectToDB();
-    const USERS = await User.findOne({ id: userId });
-    return USERS;
+    const USER = await User.findOne({ id: userId }).populate({
+      path: "threads",
+      model: Thread,
+      match: { parentId: null }, // so that the threads are only top-level aka threads not comments ( so that the length dont include the children)
+    });
+
+    console.log(USER);
+    return USER;
   } catch (error: any) {
     throw new Error(`Failed to fetch user: ${error.message}`);
   }
@@ -78,7 +84,7 @@ export async function fetchUsers({
       .limit(pageSize)
       .skip(skipAmount);
 
-      const users = await userQuery.exec();
+    const users = await userQuery.exec();
 
     const totalUsersCount = await User.countDocuments(userQuery);
 
