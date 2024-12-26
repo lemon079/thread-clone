@@ -11,7 +11,8 @@ export async function createCommunity(
   id: string,
   name: string,
   image: string | undefined,
-  createdBy: string | undefined
+  createdBy: string | undefined,
+  slug: string
 ) {
   try {
     connectToDB();
@@ -24,6 +25,7 @@ export async function createCommunity(
     const createdCommunity = await Community.create({
       id,
       name,
+      bio: slug,
       image,
       createdBy: user._id, // Use the mongoose ID of the user
       admin: user._id,
@@ -296,6 +298,7 @@ export async function deleteCommunity(communityId: string | undefined) {
 
     // revalidate the homepage
     revalidatePath("/");
+
     return deletedCommunity;
   } catch (error) {
     console.error("Error deleting community: ", error);

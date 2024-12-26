@@ -10,6 +10,9 @@ const communitySchema = new Schema(
       type: String,
       required: true,
     },
+    bio: {
+      type: String,
+    },
     image: {
       type: String,
     },
@@ -32,6 +35,7 @@ const communitySchema = new Schema(
     admin: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     createdAt: {
       type: Date,

@@ -36,8 +36,8 @@ const page = async ({ params }: PageProps) => {
             ))}
           </TabsList>
           <TabsContent value="threads" className="mt-9 w-full">
-            {community.threads.map((communityThread: any) => {
-              return < ThreadCard
+            {community.threads.map((communityThread: any) => (
+              < ThreadCard
                 key={communityThread._id} // not passing community prop as we already fetching specific community's threads
                 id={communityThread._id}
                 parentId={communityThread.parentId}
@@ -46,7 +46,7 @@ const page = async ({ params }: PageProps) => {
                 createdAt={communityThread.createdAt}
                 comments={communityThread.children}
               />
-            })}
+            ))}
           </TabsContent>
           <TabsContent value="members">
             <CommunityMembersTab communityId={params.id} />
