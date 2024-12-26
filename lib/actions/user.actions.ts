@@ -51,7 +51,6 @@ export async function fetchUser(userId: string) {
       match: { parentId: null }, // so that the threads are only top-level aka threads not comments ( so that the length dont include the children)
     });
 
-    console.log(USER);
     return USER;
   } catch (error: any) {
     throw new Error(`Failed to fetch user: ${error.message}`);

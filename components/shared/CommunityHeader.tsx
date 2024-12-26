@@ -10,8 +10,6 @@ interface Props {
 
 const CommunityHeader = ({ communityName, communityImageUrl, communityId, communityBio }: Props) => {
     // Replace hyphens with spaces in communityBio
-    console.log(communityImageUrl);
-    
     const formattedBio = communityBio ? communityBio.replace(/-/g, ' ') : communityName;
 
     return (

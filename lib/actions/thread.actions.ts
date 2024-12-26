@@ -164,24 +164,24 @@ export async function fetchUserThreads(userId: string) {
 
     const threads = await User.findOne({ id: userId })
       .populate({
-        path: "threads",
+      path: "threads",
+      model: Thread,
+      options: { sort: { createdAt: "desc" } },
+      populate: [
+        {
+        path: "children",
         model: Thread,
-        populate: [
-          {
-            path: "children",
-            model: Thread,
-            populate: {
-              path: "author",
-              model: User,
-            },
-          },
-          {
-            path: "community",
-            model: Community,
-          },
-        ],
-      })
-      .sort({ createdAt: -1 });
+        populate: {
+          path: "author",
+          model: User,
+        },
+        },
+        {
+        path: "community",
+        model: Community,
+        },
+      ],
+      });
 
     return threads;
   } catch (error: any) {
