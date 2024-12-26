@@ -57,8 +57,14 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   if (eventType === "organization.created") {
-    const { id: communityId, name, image_url, created_by, slug} = evt.data;
-    const community = await createCommunity(communityId, name, image_url, created_by, slug);
+    const { id: communityId, name, image_url, created_by, slug } = evt.data;
+    const community = await createCommunity(
+      communityId,
+      name,
+      image_url,
+      created_by,
+      slug
+    );
 
     return NextResponse.json({
       message: "Community created",

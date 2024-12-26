@@ -14,13 +14,14 @@ const page = async ({ params }: PageProps) => {
   if (!user) return null;
 
   const community = await fetchCommunityDetails(params.id);
-  console.log(community.threads)
+
   return (
     <section>
       <CommunityHeader
-        CommunityName={community.name}
+        communityName={community.name}
+        communityBio={community.bio}
         communityId={community.id}
-        CommunityImageUrl={community.image}
+        communityImageUrl={community.image}
       />
       <div className="mt-9">
         <Tabs defaultValue="threads" className="w-full">

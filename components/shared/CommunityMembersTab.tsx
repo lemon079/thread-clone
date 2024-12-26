@@ -7,7 +7,6 @@ const CommunityMembersTab = async ({ communityId }: { communityId: string }) => 
     if (!user) return null;
 
     const communityMembers = await fetchCommunityDetails(communityId);
-    console.log("Members: ", communityMembers);
     return (
         <section>
             {

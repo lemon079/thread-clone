@@ -35,6 +35,8 @@ export async function createCommunity(
     user.communities.push(createdCommunity._id);
     await user.save();
 
+    console.log("createdCommunity", createdCommunity);
+
     return createdCommunity;
   } catch (error) {
     // Handle any errors
