@@ -162,26 +162,25 @@ export async function fetchUserThreads(userId: string) {
   try {
     connectToDB();
 
-    const threads = await User.findOne({ id: userId })
-      .populate({
+    const threads = await User.findOne({ id: userId }).populate({
       path: "threads",
       model: Thread,
       options: { sort: { createdAt: "desc" } },
       populate: [
         {
-        path: "children",
-        model: Thread,
-        populate: {
-          path: "author",
-          model: User,
-        },
+          path: "children",
+          model: Thread,
+          populate: {
+            path: "author",
+            model: User,
+          },
         },
         {
-        path: "community",
-        model: Community,
+          path: "community",
+          model: Community,
         },
       ],
-      });
+    });
 
     return threads;
   } catch (error: any) {

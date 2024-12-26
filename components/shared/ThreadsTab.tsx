@@ -9,7 +9,6 @@ interface Props {
 
 const ThreadsTab = async ({ accountId, accountType }: Props) => {
     const user = await fetchUserThreads(accountId);
-    console.log("USERS: ", user);
 
     return (
         <section className="mt-9 flex flex-col gap-10">
