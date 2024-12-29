@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 export async function createCommunity(
   id: string,
   name: string,
-  image: string | undefined,
+  imageUrl: string | undefined,
   createdBy: string | undefined,
   slug: string
 ) {
@@ -26,7 +26,7 @@ export async function createCommunity(
       id,
       name,
       bio: slug,
-      image,
+      image: imageUrl,
       createdBy: user._id, // Use the mongoose ID of the user
       admin: user._id,
     });

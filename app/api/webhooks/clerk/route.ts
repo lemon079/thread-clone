@@ -65,6 +65,7 @@ export async function POST(req: Request) {
       created_by,
       slug
     );
+    
 
     return NextResponse.json({
       message: "Community created",
