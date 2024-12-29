@@ -31,7 +31,6 @@ interface PROPS {
     };
 }
 
-
 const AccountProfile = ({ user }: PROPS) => {
     const [files, setFiles] = useState<File[]>([]);
     const { startUpload } = useUploadThing("imageUploader");
