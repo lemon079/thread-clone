@@ -8,7 +8,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 const page = async ({ params }: PageProps) => {
-    const id = params.id;
+    const { id } = await params;
     if (!id) return null;
 
     const user = await currentUser();
@@ -25,7 +25,7 @@ const page = async ({ params }: PageProps) => {
                     <ThreadCard
                         key={thread._id}
                         id={thread._id}
-                        currentUserId={user?.id || ""}
+                        // currentUserId={user?.id || ""}
                         parentId={thread.parentId}
                         content={thread.text}
                         author={thread.author}
@@ -49,7 +49,7 @@ const page = async ({ params }: PageProps) => {
                         <ThreadCard
                             key={commentThread._id}
                             id={commentThread._id}
-                            currentUserId={user?.id || ""}
+                            // currentUserId={user?.id || ""}
                             parentId={commentThread.parentId}
                             content={commentThread.text}
                             author={commentThread.author}

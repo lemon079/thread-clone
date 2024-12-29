@@ -12,8 +12,8 @@ import CommunityMembersTab from "@/components/shared/CommunityMembersTab";
 const page = async ({ params }: PageProps) => {
   const user = await currentUser();
   if (!user) return null;
-
-  const community = await fetchCommunityDetails(params.id);
+  const { id } = await params;
+  const community = await fetchCommunityDetails(id);
 
   return (
     <section>
@@ -50,7 +50,7 @@ const page = async ({ params }: PageProps) => {
             ))}
           </TabsContent>
           <TabsContent value="members">
-            <CommunityMembersTab communityId={params.id} />
+            <CommunityMembersTab communityId={id} />
           </TabsContent>
         </Tabs>
       </div>
