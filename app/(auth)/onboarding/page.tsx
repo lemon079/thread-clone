@@ -7,7 +7,7 @@ const page = async () => {
   const user = await currentUser();
 
   const userInfo = await fetchUser(user.id);
-  if (!userInfo.onboarded) redirect('/onboarding')
+  if (!userInfo?.onboarded) redirect('/onboarding')
 
   const userData: any = {
     id: user?.id,
