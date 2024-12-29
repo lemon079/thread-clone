@@ -5,23 +5,25 @@ import { communityTabs } from "@/constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import CommunityHeader from "@/components/shared/CommunityHeader";
 import { fetchCommunityDetails } from "@/lib/actions/community.actions";
-import ThreadCard from "@/components/cards/ThreadCard";
 import CommunityMembersTab from "@/components/shared/CommunityMembersTab";
+import UserCard from "@/components/cards/UserCard";
+import ThreadsTab from "@/components/shared/ThreadsTab";
 
 
 const page = async ({ params }: PageProps) => {
   const user = await currentUser();
   if (!user) return null;
   const { id } = await params;
-  const community = await fetchCommunityDetails(id);
+
+  const communityDetails = await fetchCommunityDetails(id);
 
   return (
     <section>
       <CommunityHeader
-        communityName={community.name}
-        communityBio={community.bio}
-        communityId={community.id}
-        communityImageUrl={community.image}
+        communityName={communityDetails.name}
+        communityBio={communityDetails.bio}
+        communityId={communityDetails.id}
+        communityImageUrl={communityDetails.image}
       />
       <div className="mt-9">
         <Tabs defaultValue="threads" className="w-full">
@@ -31,26 +33,39 @@ const page = async ({ params }: PageProps) => {
                 <Image src={tab.icon} alt={tab.label} width={24} height={24} className="object-cover" />
                 <p className="max-sm:hidden">{tab.label}</p>
                 {tab.label === "Threads" && (
-                  <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">{community.threads?.length}</p>
+                  <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">{communityDetails.threads?.length}</p>
                 )}
               </TabsTrigger>
             ))}
           </TabsList>
-          <TabsContent value="threads" className="mt-9 w-full">
-            {community.threads.map((communityThread: any) => (
-              < ThreadCard
-                key={communityThread._id} // not passing community prop as we already fetching specific community's threads
-                id={communityThread._id}
-                parentId={communityThread.parentId}
-                content={communityThread.text}
-                author={communityThread.author}
-                createdAt={communityThread.createdAt}
-                comments={communityThread.children}
-              />
-            ))}
+          <TabsContent value="threads" className="text-light-1 w-full">
+            <ThreadsTab
+              currentUserId={user.id}
+              accountId={communityDetails._id}
+              accountType="Community"
+            />
           </TabsContent>
+
           <TabsContent value="members">
-            <CommunityMembersTab communityId={id} />
+            <section className="mt-9 flex flex-col gap-10">
+              {communityDetails?.members.map((member: any) => (
+                <UserCard
+                  key={member.id}
+                  id={member.id}
+                  name={member.name}
+                  username={member.username}
+                  imageUrl={member.imageUrl}
+                  personType="User" />
+              ))}
+            </section>
+          </TabsContent>
+
+          <TabsContent value="requests">
+            <ThreadsTab
+              currentUserId={user.id}
+              accountId={communityDetails._id}
+              accountType=""
+            />
           </TabsContent>
         </Tabs>
       </div>

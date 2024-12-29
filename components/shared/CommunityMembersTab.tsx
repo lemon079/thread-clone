@@ -7,8 +7,9 @@ const CommunityMembersTab = async ({ communityId }: { communityId: string }) => 
     if (!user) return null;
 
     const communityMembers = await fetchCommunityDetails(communityId);
+    
     return (
-        <section>
+        <section className="">
             {
                 communityMembers.members.map((member: any) => {
                     return <UserCard

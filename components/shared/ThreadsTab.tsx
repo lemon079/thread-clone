@@ -1,5 +1,36 @@
+import { redirect } from "next/navigation";
+
+import { fetchCommunityThreads } from "@/lib/actions/community.actions";
 import { fetchUserThreads } from "@/lib/actions/thread.actions";
+
 import ThreadCard from "../cards/ThreadCard";
+
+// interface Result {
+//     name: string;
+//     image: string;
+//     id: string;
+//     threads: {
+//         _id: string;
+//         text: string;
+//         parentId: string | null;
+//         author: {
+//             name: string;
+//             image: string;
+//             id: string;
+//         };
+//         community: {
+//             id: string;
+//             name: string;
+//             image: string;
+//         } | null;
+//         createdAt: string;
+//         children: {
+//             author: {
+//                 image: string;
+//             };
+//         }[];
+//     }[];
+// }
 
 interface Props {
     currentUserId: string;
@@ -7,12 +38,22 @@ interface Props {
     accountType: string;
 }
 
-const ThreadsTab = async ({ accountId, accountType }: Props) => {
-    const user = await fetchUserThreads(accountId);
+async function ThreadsTab({ currentUserId, accountId, accountType }: Props) {
+    let result: any;
+
+    if (accountType === "Community") {
+        result = await fetchCommunityThreads(accountId);
+    } else {
+        result = await fetchUserThreads(accountId);
+    }
+
+    if (!result) {
+        redirect("/");
+    }
 
     return (
-        <section className="mt-9 flex flex-col gap-10">
-            {user.threads.map((thread: any) => (
+        <section className='mt-9 flex flex-col gap-10'>
+            {result.threads.map((thread: any) => (
                 <ThreadCard
                     key={thread._id}
                     id={thread._id}
@@ -20,20 +61,24 @@ const ThreadsTab = async ({ accountId, accountType }: Props) => {
                     content={thread.text}
                     author={
                         accountType === "User"
-                            ? { name: user.name, image: user.image, id: user.id }
+                            ? { name: result.name, image: result.image, id: result.id }
                             : {
                                 name: thread.author.name,
                                 image: thread.author.image,
                                 id: thread.author.id,
                             }
                     }
-                    community={thread.community}
+                    community={
+                        accountType === "Community"
+                            ? { name: result.name, id: result.id, image: result.image }
+                            : thread.community
+                    }
                     createdAt={thread.createdAt}
                     comments={thread.children}
                 />
             ))}
         </section>
     );
-};
+}
 
 export default ThreadsTab;

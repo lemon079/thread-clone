@@ -187,3 +187,18 @@ export async function fetchUserThreads(userId: string) {
     console.log(`Error Fetching User Threads ${error.message}`);
   }
 }
+
+export async function fetchThreadsReplies(userId: string) {
+  try {
+    connectToDB();
+
+    const replies = await Thread.find({
+      author: userId,
+      parentId: { $ne: null },
+    }).populate("author", "name id _id image");
+
+    return replies;
+  } catch (error: any) {
+    console.log(`Error Fetching User Threads ${error.message}`);
+  }
+}

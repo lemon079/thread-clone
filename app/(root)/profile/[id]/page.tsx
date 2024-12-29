@@ -1,7 +1,9 @@
 import { PageProps } from "@/app/types/pageProp";
+import ThreadCard from "@/components/cards/ThreadCard";
 import ProfileHeader from "@/components/shared/ProfileHeader";
 import ThreadsTab from "@/components/shared/ThreadsTab";
 import { profileTabs } from "@/constants";
+import { fetchThreadsReplies } from "@/lib/actions/thread.actions";
 import { fetchUser } from "@/lib/actions/user.actions";
 import { currentUser } from "@clerk/nextjs/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
@@ -48,7 +50,7 @@ const page = async ({ params }: PageProps) => {
                         />
                     </TabsContent>
                     <TabsContent value="replies" className="w-full text-light-1">
-                        replies
+                            
                     </TabsContent>
                     <TabsContent value="tagged" className="w-full text-light-1">
                         {/* Add the component or content for the "Tagged" tab here */}

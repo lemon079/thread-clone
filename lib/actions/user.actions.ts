@@ -114,5 +114,7 @@ export async function getActivity(userId: string) {
     }).populate("author", "name image _id");
 
     return replies;
-  } catch (error) {}
+  } catch (error: any) {
+    throw new Error(`Failed to fetch replies: ${error.message}`);
+  }
 }

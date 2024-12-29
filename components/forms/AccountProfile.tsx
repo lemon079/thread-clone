@@ -27,6 +27,7 @@ interface PROPS {
         name: string;
         username: string,
         image: string;
+        bio: string
     };
 }
 
