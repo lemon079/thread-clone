@@ -5,25 +5,17 @@ import { redirect } from 'next/navigation';
 
 const page = async () => {
   const user = await currentUser();
-  let userInfo: any;
-  if (user) {
-    userInfo = await fetchUser(user.id);
-    // You can now safely use userInfo
-  } else {
-    // Handle the case where user is null (e.g., show an error or redirect)
-    console.error('No user found');
-  }
 
-  if (!userInfo?.onboarded) redirect('/onboarding')
+  const userInfo = await fetchUser(user.id);
+  if(!userInfo.onboarded) redirect('/onboarding');
 
-  const userData: any = {
+  const userData = {
     id: user?.id,
-    name: user?.fullName || userInfo.name,
-    username: user?.username || userInfo.username,
-    image: user?.imageUrl || userInfo.image,
-    bio: userInfo.bio || '',
+    name: user?.fullName || userInfo?.name || '',
+    username: user?.username || user?.username || '',
+    image: user?.imageUrl || userInfo?.image || '',
+    bio: userInfo?.bio || '',
   }
-
 
   return (
     <main className='mx-auto flex max-w-3xl flex-col justify-start px-10 py-20'>
