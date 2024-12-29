@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       created_by,
       slug
     );
-    
+    console.log("Image URL :", image_url);
 
     return NextResponse.json({
       message: "Community created",
