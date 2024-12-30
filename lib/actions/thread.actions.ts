@@ -55,7 +55,7 @@ export async function createThread({
       { $push: { threads: createdThread._id } },
       { new: true }
     );
-
+    console.log("path: ", path);
     revalidatePath(path);
   } catch (error: any) {
     console.log(`Error Creating Thread ${error.message}`);

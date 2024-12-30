@@ -36,7 +36,7 @@ const ThreadCard = ({ id, parentId, content, author, community, createdAt, comme
 
                     <div className='flex flex-col items-center'>
                         <Link href={`/profile/${author.id}`} className='relative w-11 h-11'>
-                            <Image src={author.image} alt='profile-picture' className='cursor-pointer rounded-full w-full' fill sizes='' />
+                            <Image src={author.image} alt='profile-picture' className='cursor-pointer rounded-full w-full' fill />
                         </Link>
                         <div className="thread-card_bar" />
                     </div>

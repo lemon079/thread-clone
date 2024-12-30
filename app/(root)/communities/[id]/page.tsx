@@ -5,7 +5,6 @@ import { communityTabs } from "@/constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import CommunityHeader from "@/components/shared/CommunityHeader";
 import { fetchCommunityDetails } from "@/lib/actions/community.actions";
-import CommunityMembersTab from "@/components/shared/CommunityMembersTab";
 import UserCard from "@/components/cards/UserCard";
 import ThreadsTab from "@/components/shared/ThreadsTab";
 
@@ -16,6 +15,7 @@ const page = async ({ params }: PageProps) => {
   const { id } = await params;
 
   const communityDetails = await fetchCommunityDetails(id);
+  let requests: any = [];
 
   return (
     <section>
@@ -32,9 +32,9 @@ const page = async ({ params }: PageProps) => {
               <TabsTrigger key={tab.label} value={tab.value} className="tab">
                 <Image src={tab.icon} alt={tab.label} width={24} height={24} className="object-cover" />
                 <p className="max-sm:hidden">{tab.label}</p>
-                {tab.label === "Threads" && (
-                  <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">{communityDetails.threads?.length}</p>
-                )}
+                <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">
+                  {tab.label === "Threads" ? communityDetails?.threads?.length : tab.label === "Members" ? communityDetails?.members?.length : requests?.length}
+                </p>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -54,8 +54,8 @@ const page = async ({ params }: PageProps) => {
                   id={member.id}
                   name={member.name}
                   username={member.username}
-                  imageUrl={member.imageUrl}
-                  personType="User" />
+                  imageUrl={member.image}
+                  personType="Community" />
               ))}
             </section>
           </TabsContent>

@@ -25,7 +25,6 @@ const PostThread = ({ userId }: { userId: string }) => {
     const pathname = usePathname(); // returns the current path
     const router = useRouter();
     const { organization } = useOrganization();
-
     const form = useForm<z.infer<typeof ThreadValidation>>({
         resolver: zodResolver(ThreadValidation),
         defaultValues: {
@@ -39,7 +38,7 @@ const PostThread = ({ userId }: { userId: string }) => {
             text: values.thread,
             author: userId,
             communityId: organization?.id ? organization.id : null,
-            path: pathname
+            path: "/"
         });
 
         router.push('/');

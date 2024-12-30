@@ -5,6 +5,7 @@ import {
   addMemberToCommunity,
   createCommunity,
   deleteCommunity,
+  removeUserFromCommunity,
 } from "@/lib/actions/community.actions";
 import { NextResponse } from "next/server";
 
@@ -74,22 +75,6 @@ export async function POST(req: Request) {
     });
   }
 
-  if (eventType === "organizationMembership.created") {
-    const { organization, public_user_data } = evt?.data;
-
-    const community = await addMemberToCommunity(
-      organization.id,
-      public_user_data.user_id
-    );
-
-    console.log("membership:", evt.data);
-    console.log("community:", community);
-
-    return NextResponse.json({
-      message: "Member added Successfully",
-    });
-  }
-
   if (eventType === "organization.deleted") {
     const { id: communityId } = evt.data;
     const deletedCommunity = await deleteCommunity(communityId);
@@ -100,6 +85,39 @@ export async function POST(req: Request) {
       message: "Community deleted",
       deletedCommunity: deletedCommunity,
     });
+  }
+
+
+  if (eventType === "organizationMembership.created") {
+    const { organization, public_user_data } = evt?.data;
+
+    // when ever the invited user accepts the invite, that user wll also be added in the db using action below
+    const community = await addMemberToCommunity(
+      organization.id,
+      public_user_data.user_id
+    );
+
+    return NextResponse.json({
+      message: "Member added Successfully",
+    });
+  }
+
+  if (eventType === "organizationMembership.deleted") {
+    try {
+      const { organization, public_user_data } = evt?.data;
+      console.log("removed", evt?.data);
+
+      await removeUserFromCommunity(public_user_data.user_id, organization.id);
+
+      return NextResponse.json({ message: "Member removed" }, { status: 201 });
+    } catch (err) {
+      console.log(err);
+
+      return NextResponse.json(
+        { message: "Internal Server Error" },
+        { status: 500 }
+      );
+    }
   }
 
   return new Response("Webhook received", { status: 200 });

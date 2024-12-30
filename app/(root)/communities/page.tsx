@@ -24,6 +24,7 @@ const page = async () => {
                     <>
                         {communities?.map((community) => (
                             <CommunityCard
+                                key={community.id}
                                 id={community.id}
                                 name={community.name}
                                 imgUrl={community.image}

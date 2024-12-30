@@ -19,6 +19,8 @@ const page = async ({ params }: PageProps) => {
     const userInfo = await fetchUser(id);
     if (!userInfo.onboarded) redirect('/onboarding');
 
+    let replies: any;
+
     return (
         <section>
             <ProfileHeader
@@ -36,9 +38,9 @@ const page = async ({ params }: PageProps) => {
                             <TabsTrigger key={tab.label} value={tab.value} className="tab">
                                 <Image src={tab.icon} alt={tab.label} width={24} height={24} className="object-cover" />
                                 <p className="max-sm:hidden">{tab.label}</p>
-                                {tab.label === "Threads" && (
-                                    <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">{userInfo?.threads?.length}</p>
-                                )}
+                                <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">
+                                    {tab.label === "Threads" ? userInfo?.threads?.length : tab.label === "Replies" ? replies?.length : ""}
+                                </p>
                             </TabsTrigger>
                         ))}
                     </TabsList>
@@ -49,12 +51,11 @@ const page = async ({ params }: PageProps) => {
                             accountType="User"
                         />
                     </TabsContent>
-                    <TabsContent value="replies" className="w-full text-light-1">
-                            
+                    {/* <TabsContent value="replies" className="w-full text-light-1">
+
                     </TabsContent>
                     <TabsContent value="tagged" className="w-full text-light-1">
-                        {/* Add the component or content for the "Tagged" tab here */}
-                    </TabsContent>
+                    </TabsContent> */}
                 </Tabs>
             </div>
         </section>

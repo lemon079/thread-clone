@@ -57,8 +57,8 @@ export async function fetchCommunityDetails(id: string) {
           model: User,
           select: "name image id",
         },
-      });
-
+      })
+      .populate("members", "id name username image");
     return communityDetails;
   } catch (error) {
     // Handle any errors
@@ -205,10 +205,12 @@ export async function removeUserFromCommunity(
   try {
     connectToDB();
 
+    // Fetch user and community objects
     const userIdObject = await User.findOne({ id: userId }, { _id: 1 });
+    
     const communityIdObject = await Community.findOne(
       { id: communityId },
-      { _id: 1 }
+      { _id: 1, threads: 1 }
     );
 
     if (!userIdObject) {
@@ -219,10 +221,23 @@ export async function removeUserFromCommunity(
       throw new Error("Community not found");
     }
 
+    // Find threads authored by the user in the community
+    const userThreads = await Thread.find(
+      { author: userIdObject._id, community: communityIdObject._id },
+      { _id: 1 }
+    );
+
+    const threadIdsToRemove = userThreads.map((thread) => thread._id);
+
     // Remove the user's _id from the members array in the community
     await Community.updateOne(
       { _id: communityIdObject._id },
-      { $pull: { members: userIdObject._id } }
+      {
+        $pull: {
+          members: userIdObject._id,
+          threads: { $in: threadIdsToRemove },
+        },
+      }
     );
 
     // Remove the community's _id from the communities array in the user
@@ -231,10 +246,16 @@ export async function removeUserFromCommunity(
       { $pull: { communities: communityIdObject._id } }
     );
 
+    // Optionally delete or soft-delete the threads
+    await Thread.deleteMany({ _id: { $in: threadIdsToRemove } });
+
     return { success: true };
   } catch (error) {
     // Handle any errors
-    console.error("Error removing user from community:", error);
+    console.error(
+      "Error removing user and their threads from community:",
+      error
+    );
     throw error;
   }
 }
@@ -267,7 +288,7 @@ export async function updateCommunityInfo(
   }
 }
 
-export async function deleteCommunity(communityId: string | undefined) {
+export async function deleteCommunity(communityId: string) {
   try {
     connectToDB();
 

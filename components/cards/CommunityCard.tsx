@@ -14,7 +14,7 @@ interface Props {
     }[];
 }
 
-const CommunityCard = async ({ key, id, name, imgUrl, bio, members }: Props) => {
+const CommunityCard = async ({ id, name, imgUrl, bio, members }: Props) => {
     return (
         <article className='community-card'>
             <div className='flex flex-wrap items-center gap-3'>
