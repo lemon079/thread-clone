@@ -205,48 +205,35 @@ export async function removeUserFromCommunity(
     connectToDB();
 
     // Fetch user and community objects
-    const userIdObject = await User.findOne({ id: userId }, { _id: 1 });
-    
-    const communityIdObject = await Community.findOne(
+    const user = await User.findOne({ id: userId }, { _id: 1 });
+
+    const community = await Community.findOne(
       { id: communityId },
       { _id: 1, threads: 1 }
     );
 
-    if (!userIdObject) {
+    if (!user) {
       throw new Error("User not found");
     }
 
-    if (!communityIdObject) {
+    if (!community) {
       throw new Error("Community not found");
     }
 
-    // Find threads authored by the user in the community
-    const userThreads = await Thread.find(
-      { author: userIdObject._id, community: communityIdObject._id },
-      { _id: 1 }
-    );
-
-    const threadIdsToRemove = userThreads.map((thread) => thread._id);
+    // Find and remove threads authored by the user in the community
+    const userThreads = await Thread.deleteMany({ author: user._id });
 
     // Remove the user's _id from the members array in the community
     await Community.updateOne(
-      { _id: communityIdObject._id },
-      {
-        $pull: {
-          members: userIdObject._id,
-          threads: { $in: threadIdsToRemove },
-        },
-      }
+      { members: { $in: user._id } },
+      { $pull: { members: user._id } }
     );
 
     // Remove the community's _id from the communities array in the user
     await User.updateOne(
-      { _id: userIdObject._id },
-      { $pull: { communities: communityIdObject._id } }
+      { _id: user._id },
+      { $pull: { communities: community._id } }
     );
-
-    // Optionally delete or soft-delete the threads
-    await Thread.deleteMany({ _id: { $in: threadIdsToRemove } });
 
     return { success: true };
   } catch (error) {
