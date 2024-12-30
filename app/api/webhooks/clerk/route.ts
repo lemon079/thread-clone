@@ -73,10 +73,14 @@ export async function POST(req: Request) {
     });
   }
 
+  if (eventType === "organizationMembership.created") {
+    const { organization, public_user_data } = evt?.data;
+    console.log("membership:", evt.data);
+  }
+
   if (eventType === "organization.deleted") {
     const { id: communityId } = evt.data;
     const deletedCommunity = await deleteCommunity(communityId);
-    console.log(deletedCommunity);
 
     return NextResponse.json({
       message: "Community deleted",
