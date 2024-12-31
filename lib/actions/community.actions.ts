@@ -209,7 +209,6 @@ export async function removeUserFromCommunity(
 
     const community = await Community.findOne(
       { id: communityId },
-      { _id: 1, threads: 1 }
     );
 
     if (!user) {
@@ -221,7 +220,7 @@ export async function removeUserFromCommunity(
     }
 
     // Find and remove threads authored by the user in the community
-    const userThreads = await Thread.deleteMany({ author: user._id });
+    await Thread.deleteMany({ author: user._id });
 
     // Remove the user's _id from the members array in the community
     await Community.updateOne(
@@ -234,6 +233,9 @@ export async function removeUserFromCommunity(
       { _id: user._id },
       { $pull: { communities: community._id } }
     );
+
+    // Remove the thread if it is a comment
+    Thread.deleteMany({ children: { $in: user._id } });
 
     return { success: true };
   } catch (error) {

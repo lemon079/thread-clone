@@ -145,7 +145,7 @@ export async function addCommentToThread({
       text: commentText,
       author: authorId,
       parentId: threadId,
-    });
+    }); 
 
     // update original thread to include this comment document to its children
     originalThread.children.push(commentThread._id); // as the children takes the _id of the thread

@@ -18,14 +18,17 @@ export function formatDateString(dateString: string) {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "Asia/Karachi",
   };
 
   const date = new Date(dateString);
+
   const formattedDate = date.toLocaleDateString(undefined, options);
 
   const time = date.toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
+    timeZone: "Asia/Karachi", // Ensure the time is also in the correct time zone
   });
 
   return `${time} - ${formattedDate}`;
