@@ -300,9 +300,6 @@ export async function deleteCommunity(communityId: string) {
 
     await Promise.all(userUpdatePromises);
 
-    // Delete all users who were part of the community
-    await User.deleteMany({ communities: { $size: 0 } }); // Removes users with no communities
-
     // Revalidate the homepage (or relevant paths)
     revalidatePath("/");
 
