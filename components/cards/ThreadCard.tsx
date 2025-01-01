@@ -25,9 +25,11 @@ interface Props {
         }
     }[];
     isComment?: boolean;
+    view?: "allThreads" | "singleThread";
 }
 
-const ThreadCard = ({ id, parentId, content, author, community, createdAt, comments, isComment }: Props) => {
+
+const ThreadCard = ({ id, parentId, content, author, community, createdAt, comments, isComment, view }: Props) => {
 
     return (
         <article className={`flex flex-col w-full rounded-xl ${isComment ? "px-0 py-2 my-10 xs:px-7" : "p-7 bg-dark-2"}`}>
@@ -61,7 +63,8 @@ const ThreadCard = ({ id, parentId, content, author, community, createdAt, comme
                 {/* TODO: DELET THREAD */}
                 {/* TODO: Show comment logos */}
             </div>
-            {!isComment && comments.length > 0 && (
+
+            {!isComment && comments.length > 0 && view === 'allThreads' && (
                 <div className='ml-1 mt-3 flex items-center gap-2'>
                     {comments.slice(0, 2).map((comment, index) => (
                         <Image
@@ -81,6 +84,7 @@ const ThreadCard = ({ id, parentId, content, author, community, createdAt, comme
                     </Link>
                 </div>
             )}
+
             {!isComment && community ? (
                 < Link href={`/communities/${community.id}`} className='mt-5 flex items-center relative'>
                     <p className='text-subtle-medium text-gray-1'>{formatDateString(createdAt)} - {community.name} Community</p>

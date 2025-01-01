@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form"
 import Image from 'next/image';
 import { addCommentToThread } from '@/lib/actions/thread.actions';
 import { usePathname } from 'next/navigation';
+import { useOrganization } from '@clerk/nextjs';
 
 interface Props {
     threadId: string,
@@ -19,6 +20,7 @@ interface Props {
 const Comment = ({ threadId, currentUserId, currentUserImage }: Props) => {
 
     const path = usePathname();
+    const { organization } = useOrganization();
 
     const form = useForm<z.infer<typeof CommentValidation>>({
         resolver: zodResolver(CommentValidation),
@@ -32,6 +34,7 @@ const Comment = ({ threadId, currentUserId, currentUserImage }: Props) => {
             commentText: values.thread,
             userId: currentUserId,
             threadId: threadId,
+            communityId: organization ? organization.id : null,
             path
         }
         await addCommentToThread(threadObject);

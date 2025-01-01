@@ -124,11 +124,13 @@ export async function addCommentToThread({
   commentText,
   userId,
   path,
+  communityId,
 }: {
   commentText: string;
   userId: string;
   threadId: string;
   path: string;
+  communityId: string | null;
 }) {
   connectToDB();
   try {
@@ -144,8 +146,9 @@ export async function addCommentToThread({
     const commentThread = await Thread.create({
       text: commentText,
       author: authorId,
+      community: communityId,
       parentId: threadId,
-    }); 
+    });
 
     // update original thread to include this comment document to its children
     originalThread.children.push(commentThread._id); // as the children takes the _id of the thread

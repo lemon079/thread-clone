@@ -15,7 +15,6 @@ const page = async ({ params }: PageProps) => {
     if (!user) return null;
     const thread = await fetchThreadById(id);
     const userInfo = await fetchUser(user.id);
-
     if (!userInfo.onboarded) redirect("/onboarding");
 
     return (
@@ -32,6 +31,7 @@ const page = async ({ params }: PageProps) => {
                         community={thread.community}
                         createdAt={thread.createdAt}
                         comments={thread.children}
+                        view="singleThread"
                     />
                 </div>
 
