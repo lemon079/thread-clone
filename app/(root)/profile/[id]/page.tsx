@@ -19,7 +19,7 @@ const page = async ({ params }: PageProps) => {
     const userInfo = await fetchUser(id);
     if (!userInfo.onboarded) redirect('/onboarding');
 
-    let replies: any;
+    let replies = await fetchThreadsReplies(userInfo._id);
 
     return (
         <section>
@@ -44,17 +44,30 @@ const page = async ({ params }: PageProps) => {
                             </TabsTrigger>
                         ))}
                     </TabsList>
-                    <TabsContent value="threads" className="w-full text-light-1">
+                    <TabsContent value="threads" className="w-full text-light-1 mt-9">
                         <ThreadsTab
                             currentUserId={user?.id || ""}
                             accountId={userInfo.id}
                             accountType="User"
                         />
                     </TabsContent>
-                    {/* <TabsContent value="replies" className="w-full text-light-1">
-
+                    <TabsContent value="replies" className="w-full text-light-1 mt-9">
+                        {replies?.map(reply => (
+                            <ThreadCard
+                                key={reply._id}
+                                id={reply._id}
+                                // currentUserId={user?.id || ""} // passed "" so that it is always gonna be string
+                                parentId={reply.parentId}
+                                content={reply.text}
+                                author={reply.author}
+                                community={reply.community}
+                                createdAt={reply.createdAt}
+                                comments={reply.children}
+                                view="allThreads"
+                            />
+                        ))}
                     </TabsContent>
-                    <TabsContent value="tagged" className="w-full text-light-1">
+                    {/* <TabsContent value="tagged" className="w-full text-light-1">
                     </TabsContent> */}
                 </Tabs>
             </div>

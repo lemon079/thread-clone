@@ -1,13 +1,14 @@
 import CommunityCard from '@/components/cards/CommunityCard';
+import Pagination from '@/components/shared/Pagination';
 import { fetchCommunities } from '@/lib/actions/community.actions'
 import { currentUser } from '@clerk/nextjs/server';
 import React from 'react'
 
-const page = async () => {
+const page = async ({ searchParams }: { searchParams: { page: number } }) => {
     const user = currentUser();
     if (!user) return null;
 
-    const { communities, isNext } = await fetchCommunities({});
+    const { communities, isNext } = await fetchCommunities({ pageNumber: searchParams?.page ? +searchParams.page : 1, });
 
     return (
         <>
@@ -19,7 +20,7 @@ const page = async () => {
 
             <section className='mt-9 flex flex-wrap gap-4'>
                 {communities.length === 0 ? (
-                    <p className='no-result'>No Result</p>
+                    <p className='no-result'>No Community</p>
                 ) : (
                     <>
                         {communities?.map((community) => (
@@ -36,11 +37,11 @@ const page = async () => {
                 )}
             </section>
 
-            {/* <Pagination
-            path='communities'
-            pageNumber={searchParams?.page ? +searchParams.page : 1}
-            isNext={result.isNext}
-          /> */}
+            <Pagination
+                path='communities'
+                pageNumber={searchParams?.page ? +searchParams.page : 1}
+                isNext={isNext}
+            />
         </>
     );
 }
