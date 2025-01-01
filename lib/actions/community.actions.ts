@@ -207,9 +207,7 @@ export async function removeUserFromCommunity(
     // Fetch user and community objects
     const user = await User.findOne({ id: userId }, { _id: 1 });
 
-    const community = await Community.findOne(
-      { id: communityId },
-    );
+    const community = await Community.findOne({ id: communityId });
 
     if (!user) {
       throw new Error("User not found");
@@ -287,19 +285,20 @@ export async function deleteCommunity(communityId: string) {
 
     if (!deletedCommunity) throw new Error("Community not found");
 
-    const deletedCommunityObjectId = deletedCommunity._id;
-
-    // Delete all threads associated with the community
-    await Thread.deleteMany({ community: deletedCommunityObjectId });
+    // Delete all threads and child threads associated with the community
+    await Thread.deleteMany({
+      community: deletedCommunity._id,
+      children: { $in: deletedCommunity._id },
+    });
 
     // Find all users who are part of the community
     const communityUsers = await User.find({
-      communities: deletedCommunityObjectId,
+      communities: deletedCommunity._id,
     });
 
     // Remove the community from the 'communities' array for each user
     const updateUserPromises = communityUsers.map((user) => {
-      user.communities.pull(deletedCommunityObjectId);
+      user.communities.pull(deletedCommunity._id);
       return user.save();
     });
 
