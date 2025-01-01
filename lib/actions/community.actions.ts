@@ -276,40 +276,37 @@ export async function updateCommunityInfo(
 
 export async function deleteCommunity(communityId: string) {
   try {
-    connectToDB();
+    await connectToDB(); // Ensure database connection
 
     // Find the community by its ID and delete it
-    const deletedCommunity = await Community.findOneAndDelete({
-      id: communityId,
-    });
+    const deletedCommunity = await Community.findByIdAndDelete(communityId);
 
     if (!deletedCommunity) throw new Error("Community not found");
 
-    // Delete all threads and child threads associated with the community
-    await Thread.deleteMany({
-      community: deletedCommunity._id,
-      children: { $in: deletedCommunity._id },
-    });
+    // Delete all threads associated with the community
+    await Thread.deleteMany({ community: deletedCommunity._id });
 
-    // Find all users who are part of the community
+    // Remove the community from the 'communities' array for all users
     const communityUsers = await User.find({
       communities: deletedCommunity._id,
     });
 
-    // Remove the community from the 'communities' array for each user
-    const updateUserPromises = communityUsers.map((user) => {
-      user.communities.pull(deletedCommunity._id);
+    const userUpdatePromises = communityUsers.map(async (user) => {
+      user.communities.pull(deletedCommunity._id); // Remove the community from the user's list
       return user.save();
     });
 
-    await Promise.all(updateUserPromises);
+    await Promise.all(userUpdatePromises);
 
-    // revalidate the homepage
-    revalidatePath("/");
+    // Delete all users who were part of the community
+    await User.deleteMany({ communities: { $size: 0 } }); // Removes users with no communities
 
-    return deletedCommunity;
+    // Revalidate the homepage (or relevant paths)
+    revalidatePath("/", "page");
+
+    return { message: "Community and associated data deleted successfully." };
   } catch (error) {
     console.error("Error deleting community: ", error);
-    throw error;
+    throw new Error("Failed to delete the community");
   }
 }
