@@ -138,6 +138,8 @@ export async function addCommentToThread({
     userId = removeQuotes(userId);
     const authorId = new mongoose.Types.ObjectId(userId);
 
+    const community = communityId ? await Community.findOne({ community: communityId }) : null;
+
     // find original thread by id
     const originalThread = await Thread.findById(threadId);
     if (!originalThread) throw new Error("Thread Not Found");
@@ -146,9 +148,11 @@ export async function addCommentToThread({
     const commentThread = await Thread.create({
       text: commentText,
       author: authorId,
-      community: communityId,
+      community: community ? community._id : null,
       parentId: threadId,
     });
+
+    
 
     // update original thread to include this comment document to its children
     originalThread.children.push(commentThread._id); // as the children takes the _id of the thread

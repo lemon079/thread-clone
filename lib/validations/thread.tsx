@@ -7,4 +7,5 @@ export const ThreadValidation = z.object({
 
 export const CommentValidation = z.object({
     thread: z.string().min(3, { message: "Minimum three or more characters" }),
+    
 })
