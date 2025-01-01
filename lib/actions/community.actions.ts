@@ -279,7 +279,9 @@ export async function deleteCommunity(communityId: string) {
     await connectToDB(); // Ensure database connection
 
     // Find the community by its ID and delete it
-    const deletedCommunity = await Community.findOneAndDelete(communityId);
+    const deletedCommunity = await Community.findOneAndDelete({
+      id: communityId,
+    });
 
     if (!deletedCommunity) throw new Error("Community not found");
 
@@ -302,7 +304,7 @@ export async function deleteCommunity(communityId: string) {
     await User.deleteMany({ communities: { $size: 0 } }); // Removes users with no communities
 
     // Revalidate the homepage (or relevant paths)
-    revalidatePath("/", "page");
+    revalidatePath("/");
 
     return { message: "Community and associated data deleted successfully." };
   } catch (error) {
