@@ -22,7 +22,7 @@ import { useOrganization } from "@clerk/nextjs"
 const PostThread = ({ userId }: { userId: string }) => {
     // this userId is from db ObjectId ( _id) not a clerk id   
 
-    const pathname = usePathname(); // returns the current path
+    const path = usePathname(); // returns the current path
     const router = useRouter();
     const { organization } = useOrganization();
     const form = useForm<z.infer<typeof ThreadValidation>>({
@@ -38,7 +38,7 @@ const PostThread = ({ userId }: { userId: string }) => {
             text: values.thread,
             author: userId,
             communityId: organization?.id ? organization.id : null,
-            path: "/"
+            path
         });
 
         router.push('/');

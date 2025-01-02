@@ -4,7 +4,7 @@ import { connectToDB } from "../mongoose";
 import Thread from "../models/thread.model";
 import User from "../models/user.model";
 import { revalidatePath } from "next/cache";
-import mongoose from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
 import { removeQuotes } from "../utils";
 import Community from "../models/community.model";
 
@@ -207,5 +207,41 @@ export async function fetchThreadsReplies(userId: string) {
     return replies;
   } catch (error: any) {
     console.log(`Error Fetching User Threads ${error.message}`);
+  }
+}
+
+export async function addLikeToThread(userId: string, threadId: any) {
+  connectToDB();
+  try {
+    const user = await User.findOne({ id: userId });
+    const updatedThread = await Thread.findByIdAndUpdate(
+      { _id: threadId },
+      { $addToSet: { likes: user._id } },
+      { new: true }
+    );
+
+    revalidatePath("/");
+
+    return updatedThread;
+  } catch (error: any) {
+    console.log(`Error incrementing likes ${error.message}`);
+  }
+}
+
+export async function removeLikeFromThread(userId: string, threadId: any) {
+  connectToDB();
+  try {
+    const user = await User.findOne({ id: userId });
+    const updatedThread = await Thread.findByIdAndUpdate(
+      { _id: threadId },
+      { $pull: { likes: user._id } }, // Remove user from likes
+      { new: true } // Return updated thread
+    );
+
+    revalidatePath("/");
+
+    return updatedThread;
+  } catch (error: any) {
+    console.log(`Error decrementing likes ${error.message}`);
   }
 }

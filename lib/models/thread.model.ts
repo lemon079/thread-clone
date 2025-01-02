@@ -14,19 +14,26 @@ const threadSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Community",
   },
+  likes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ], // Missing comma was here
+
   createdAt: {
     type: Date,
     default: Date.now,
   },
   parentId: {
-    //creating parentId incase this thread is a comment
+    // creating parentId in case this thread is a comment
     type: String,
     default: null,
   },
   children: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Thread", // recursion, means one thread can have multiple threads as children
+      ref: "Thread", // recursion, one thread can have multiple threads as children
     },
   ],
 });
@@ -34,9 +41,3 @@ const threadSchema = new Schema({
 const Thread = mongoose.models.Thread || model("Thread", threadSchema);
 
 export default Thread;
-
-// Children attribute because
-// Thread Original
-//  -> Thread Comment1
-//  -> Thread Comment2
-//     -> Thread Comment3 // comment on the Thread Comment2
