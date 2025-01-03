@@ -56,7 +56,7 @@ const page = async ({ params }: PageProps) => {
                             <ThreadCard
                                 key={reply._id}
                                 id={reply._id}
-                                // currentUserId={user?.id || ""} // passed "" so that it is always gonna be string
+                                currentUserId={user?.id || ""}
                                 parentId={reply.parentId}
                                 content={reply.text}
                                 author={reply.author}
@@ -64,6 +64,7 @@ const page = async ({ params }: PageProps) => {
                                 createdAt={reply.createdAt}
                                 comments={reply.children}
                                 view="allThreads"
+                                noOfLikes={reply.likes.length}
                             />
                         ))}
                     </TabsContent>

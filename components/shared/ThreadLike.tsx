@@ -1,21 +1,33 @@
 'use client';
-
-import { useState } from 'react';
 import Image from 'next/image';
 import { addLikeToThread, removeLikeFromThread } from '@/lib/actions/thread.actions';
 
-const ThreadLike = ({ threadId, userId }: { threadId: string; userId: string }) => {
-    threadId = JSON.parse(threadId);
-
-    const [likes, setLikes] = useState<number>(0); // Number of likes
-    const [isLiked, setIsLiked] = useState<boolean>(false); // Liked state
+const ThreadLike = ({
+    threadId,
+    userId,
+    isLiked,
+    noOfLikes
+}: {
+    threadId: string;
+    userId: string;
+    isLiked: boolean;
+    noOfLikes: number;
+}) => {
 
     const handleLike = async () => {
-       
+        try {
+            if (isLiked) {
+                await removeLikeFromThread(userId, threadId);
+            } else {
+                await addLikeToThread(userId, threadId);
+            }
+        } catch (error) {
+            console.error('Failed to update likes:', error);
+        }
     };
 
     return (
-        <div>
+        <div className='flex items-center'>
             <Image
                 src={`/assets/${isLiked ? 'heart-filled.svg' : 'heart-gray.svg'}`}
                 alt="heart"
@@ -24,7 +36,7 @@ const ThreadLike = ({ threadId, userId }: { threadId: string; userId: string }) 
                 className="cursor-pointer object-contain hover:contrast-0"
                 onClick={handleLike}
             />
-            {likes > 0 && <span>{likes}</span>}
+            {noOfLikes > 0 && <p className="text-white text-small-regular">{noOfLikes}</p>}
         </div>
     );
 };

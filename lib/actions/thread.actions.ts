@@ -4,7 +4,7 @@ import { connectToDB } from "../mongoose";
 import Thread from "../models/thread.model";
 import User from "../models/user.model";
 import { revalidatePath } from "next/cache";
-import mongoose, { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { removeQuotes } from "../utils";
 import Community from "../models/community.model";
 
@@ -55,7 +55,7 @@ export async function createThread({
       { $push: { threads: createdThread._id } },
       { new: true }
     );
-    console.log("path: ", path);
+
     revalidatePath(path);
   } catch (error: any) {
     console.log(`Error Creating Thread ${error.message}`);
@@ -102,13 +102,13 @@ export async function fetchThread(pageNumber = 1, pageSize = 20) {
 export async function fetchThreadById(threadId: string) {
   connectToDB();
   try {
-    // TODO: Populate community
     const thread = await Thread.findById(threadId)
       .populate("author", "_id id name image")
       .populate({
         path: "children",
         model: Thread,
-        populate: "author",
+        options: { sort: { createdAt: "desc" } }, // Sort children by createdAt in descending order
+        populate: { path: "author", model: User },
       })
       .populate("community")
       .sort({ createdAt: "desc" });
@@ -155,11 +155,12 @@ export async function addCommentToThread({
     });
 
     // update original thread to include this comment document to its children
-    originalThread.children.push(commentThread._id); // as the children takes the _id of the thread
+    originalThread.children.push(commentThread._id);
     await originalThread.save();
 
     // revalidate the path
     revalidatePath(path);
+    return commentThread;
   } catch (error: any) {
     console.log(`Error Adding Comment ${error.message}`);
   }
@@ -214,15 +215,13 @@ export async function addLikeToThread(userId: string, threadId: any) {
   connectToDB();
   try {
     const user = await User.findOne({ id: userId });
-    const updatedThread = await Thread.findByIdAndUpdate(
+    const { likes }: any = await Thread.findByIdAndUpdate(
       { _id: threadId },
       { $addToSet: { likes: user._id } },
       { new: true }
-    );
+    ).lean();
 
-    revalidatePath("/");
-
-    return updatedThread;
+    return likes;
   } catch (error: any) {
     console.log(`Error incrementing likes ${error.message}`);
   }
@@ -232,15 +231,13 @@ export async function removeLikeFromThread(userId: string, threadId: any) {
   connectToDB();
   try {
     const user = await User.findOne({ id: userId });
-    const updatedThread = await Thread.findByIdAndUpdate(
+    const { likes }: any = await Thread.findByIdAndUpdate(
       { _id: threadId },
-      { $pull: { likes: user._id } }, // Remove user from likes
-      { new: true } // Return updated thread
-    );
+      { $pull: { likes: user._id } },
+      { new: true }
+    ).lean();
 
-    revalidatePath("/");
-
-    return updatedThread;
+    return likes;
   } catch (error: any) {
     console.log(`Error decrementing likes ${error.message}`);
   }

@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { currentUser } from '@clerk/nextjs/server';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
 import ThreadLike from '../shared/ThreadLike';
 import { formatDateString } from '@/lib/utils';
 
@@ -29,10 +27,11 @@ interface Props {
     }[];
     isComment?: boolean;
     view?: 'allThreads' | 'singleThread';
+    noOfLikes: number;
+    isLiked: boolean;
 }
 
-const ThreadCard = async ({ id, currentUserId, content, author, community, createdAt, comments, isComment, view, }: Props) => {
-
+const ThreadCard = async ({ id, currentUserId, content, author, community, createdAt, comments, isComment, view, noOfLikes, isLiked }: Props) => {
     return (
         <article
             className={`flex flex-col w-full rounded-xl ${isComment ? 'px-0 py-2 my-10 xs:px-7' : 'p-7 bg-dark-2'}`}>
@@ -53,8 +52,10 @@ const ThreadCard = async ({ id, currentUserId, content, author, community, creat
                         <div className="mt-5 flex flex-col gap-3">
                             <div className="flex gap-3.5">
                                 <ThreadLike
-                                    threadId={id}
+                                    threadId={JSON.stringify(id)} // Pass as string
                                     userId={currentUserId || ""}
+                                    noOfLikes={noOfLikes}
+                                    isLiked={isLiked}
                                 />
                                 <Link href={`/thread/${id}`}>
                                     <Image

@@ -25,7 +25,7 @@ const Comment = ({ threadId, currentUserId, currentUserImage }: Props) => {
     const form = useForm<z.infer<typeof CommentValidation>>({
         resolver: zodResolver(CommentValidation),
         defaultValues: {
-            thread: '',            
+            thread: '',
         },
     })
 
@@ -37,8 +37,7 @@ const Comment = ({ threadId, currentUserId, currentUserImage }: Props) => {
             communityId: organization ? organization.id : null,
             path
         }
-
-        await addCommentToThread(threadObject);
+        const comment = await addCommentToThread(threadObject);
         form.reset();
     }
 

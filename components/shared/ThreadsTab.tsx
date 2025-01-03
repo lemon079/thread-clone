@@ -5,32 +5,32 @@ import { fetchUserThreads } from "@/lib/actions/thread.actions";
 
 import ThreadCard from "../cards/ThreadCard";
 
-// interface Result {
-//     name: string;
-//     image: string;
-//     id: string;
-//     threads: {
-//         _id: string;
-//         text: string;
-//         parentId: string | null;
-//         author: {
-//             name: string;
-//             image: string;
-//             id: string;
-//         };
-//         community: {
-//             id: string;
-//             name: string;
-//             image: string;
-//         } | null;
-//         createdAt: string;
-//         children: {
-//             author: {
-//                 image: string;
-//             };
-//         }[];
-//     }[];
-// }
+interface Result {
+    name: string;
+    image: string;
+    id: string;
+    threads: {
+        _id: string;
+        text: string;
+        parentId: string | null;
+        author: {
+            name: string;
+            image: string;
+            id: string;
+        };
+        community: {
+            id: string;
+            name: string;
+            image: string;
+        } | null;
+        createdAt: string;
+        children: {
+            author: {
+                image: string;
+            };
+        }[];
+    }[];
+}
 
 interface Props {
     currentUserId: string;
@@ -39,7 +39,7 @@ interface Props {
 }
 
 async function ThreadsTab({ currentUserId, accountId, accountType }: Props) {
-    let result: any;
+    let result: Result;
 
     if (accountType === "Community") {
         result = await fetchCommunityThreads(accountId);
@@ -75,6 +75,7 @@ async function ThreadsTab({ currentUserId, accountId, accountType }: Props) {
                     }
                     createdAt={thread.createdAt}
                     comments={thread.children}
+                    noOfLikes={thread.likes}
                 />
             ))}
         </section>

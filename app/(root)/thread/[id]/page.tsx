@@ -24,7 +24,7 @@ const page = async ({ params }: PageProps) => {
                     <ThreadCard
                         key={thread._id}
                         id={thread._id}
-                        // currentUserId={user?.id || ""}
+                        currentUserId={user?.id || ""}
                         parentId={thread.parentId}
                         content={thread.text}
                         author={thread.author}
@@ -32,6 +32,8 @@ const page = async ({ params }: PageProps) => {
                         createdAt={thread.createdAt}
                         comments={thread.children}
                         view="singleThread"
+                        noOfLikes={thread.likes.length}
+                        isLiked={thread.likes.includes(userInfo._id) || false}
                     />
                 </div>
 
@@ -45,11 +47,11 @@ const page = async ({ params }: PageProps) => {
 
                 {/* fetching comments of a thread that we see at the moment */}
                 <div className="mt-10">
-                    {thread && thread.children.map((commentThread: any) => (
-                        <ThreadCard
+                    {thread && thread.children.map((commentThread: any) => {
+                        return <ThreadCard
                             key={commentThread._id}
                             id={commentThread._id}
-                            // currentUserId={user?.id || ""}
+                            currentUserId={user?.id || ""}
                             parentId={commentThread.parentId}
                             content={commentThread.text}
                             author={commentThread.author}
@@ -57,8 +59,10 @@ const page = async ({ params }: PageProps) => {
                             createdAt={commentThread.createdAt}
                             comments={commentThread.children}
                             isComment
+                            noOfLikes={commentThread.likes.length}
+                            isLiked={commentThread.likes.includes(userInfo._id) || false}
                         />
-                    ))}
+                    })}
                 </div>
             </section>
         </>
