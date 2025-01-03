@@ -7,7 +7,7 @@ interface Props {
 }
 
 const Pagination = ({ path, pageNumber, isNext }: Props) => {
-    
+
     return (
         <div className="pagination">
             {/* Previous Page Button */}

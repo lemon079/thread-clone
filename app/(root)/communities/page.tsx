@@ -2,15 +2,19 @@ import CommunityCard from '@/components/cards/CommunityCard';
 import Pagination from '@/components/shared/Pagination';
 import { fetchCommunities } from '@/lib/actions/community.actions'
 import { currentUser } from '@clerk/nextjs/server';
-import { useSearchParams } from 'next/navigation';
 import React from 'react'
 
-const page = async ({ searchParams }: { searchParams: { page: number } }) => {
+const page = async ({ searchParams }: {
+    searchParams: { [key: string]: string | undefined };
+}) => {
     const user = currentUser();
-    const page = await useSearchParams().get('page');
     if (!user) return null;
 
-    const { communities, isNext } = await fetchCommunities({ pageNumber: searchParams?.page ? +searchParams.page : 1, });
+    const { communities, isNext } = await fetchCommunities({
+        searchString: searchParams.q,
+        pageNumber: searchParams?.page ? +searchParams.page : 1,
+        pageSize: 25
+    });
 
     return (
         <>
