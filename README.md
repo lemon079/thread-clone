@@ -2,6 +2,11 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Changes to Make: 
+1- fix Community image not appearing
+2- implement community update feature
+3- implement thread delete feature
+
 First, run the development server:
 
 ```bash
