@@ -23,7 +23,7 @@ const Topbar = () => {
 
         <OrganizationSwitcher appearance={{
           elements: {
-            organizationSwitcherTrigger: "py-2 px-4"
+            organizationSwitcherTrigger: "py-2 px-4 text-gray-500 hover:opacity-75 hover:text-gray-500"
           }
         }} />
       </div>

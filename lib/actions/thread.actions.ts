@@ -4,9 +4,10 @@ import { connectToDB } from "../mongoose";
 import Thread from "../models/thread.model";
 import User from "../models/user.model";
 import { revalidatePath } from "next/cache";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { removeQuotes } from "../utils";
 import Community from "../models/community.model";
+import { ThreadType } from "../types";
 
 export async function createThread({
   text,
@@ -62,17 +63,13 @@ export async function createThread({
   }
 }
 
-export async function fetchThread(pageNumber = 1, pageSize = 20) {
+export async function fetchThread() {
   connectToDB();
   try {
-    // calculate the number of posts to skip
-    const skipAmount = (pageNumber - 1) * pageSize;
-
-    // fetching posts that have no parents (top-level threads)
-    const threadsQuery = Thread.find({ parentId: { $in: [null, undefined] } })
+    const threads: ThreadType[] = await Thread.find({
+      parentId: { $in: [null, undefined] },
+    })
       .sort({ createdAt: "desc" })
-      .skip(skipAmount)
-      .limit(pageSize)
       .populate({ path: "author", model: Thread })
       .populate({
         path: "children",
@@ -84,25 +81,20 @@ export async function fetchThread(pageNumber = 1, pageSize = 20) {
         },
       })
       .populate("author")
-      .populate("community");
+      .populate("community")
+      .exec();
 
-    const totalThreadCount = await Thread.countDocuments({
-      parentId: { $in: [null, undefined] },
-    });
-
-    const threads = await threadsQuery.exec();
-
-    const isNext = totalThreadCount > skipAmount + threads.length; // return true or false;
-    return { threads, isNext };
+    return { threads };
   } catch (error: any) {
     console.log(`Error fetching Threads ${error.message}`);
+    throw error;
   }
 }
 
 export async function fetchThreadById(threadId: string) {
   connectToDB();
   try {
-    const thread = await Thread.findById(threadId)
+    const thread: ThreadType = await Thread.findById(threadId)
       .populate("author", "_id id name image")
       .populate({
         path: "children",
@@ -166,29 +158,29 @@ export async function addCommentToThread({
   }
 }
 
-export async function fetchUserThreads(userId: string) {
+export async function fetchUserThreads(userId: Types.ObjectId) {
   try {
     connectToDB();
 
-    const threads = await User.findOne({ id: userId }).populate({
-      path: "threads",
-      model: Thread,
-      options: { sort: { createdAt: "desc" } },
-      populate: [
-        {
-          path: "children",
-          model: Thread,
-          populate: {
-            path: "author",
-            model: User,
-          },
-        },
-        {
-          path: "community",
-          model: Community,
-        },
-      ],
-    });
+    const threads: ThreadType[] = await Thread.find({
+      $or: [{ author: userId }],
+    })
+      .populate({
+        path: "author",
+        model: User,
+        select: "_id id name image",
+      })
+      .populate({
+        path: "children",
+        model: Thread,
+        match: { author: userId },
+        select: "_id content author createdAt",
+      })
+      .populate({
+        path: "community",
+        model: Community,
+        select: "_id id name image",
+      });
 
     return threads;
   } catch (error: any) {
@@ -200,7 +192,7 @@ export async function fetchThreadsReplies(userId: string) {
   try {
     connectToDB();
 
-    const replies = await Thread.find({
+    const replies: ThreadType[] = await Thread.find({
       author: userId,
       parentId: { $ne: null },
     }).populate("author", "name id _id image");
@@ -214,13 +206,14 @@ export async function fetchThreadsReplies(userId: string) {
 export async function addLikeToThread(userId: string, threadId: any) {
   connectToDB();
   try {
+    threadId = removeQuotes(threadId);
     const user = await User.findOne({ id: userId });
     const { likes }: any = await Thread.findByIdAndUpdate(
       { _id: threadId },
       { $addToSet: { likes: user._id } },
       { new: true }
     ).lean();
-
+    revalidatePath(`/thread/${threadId}`);
     return likes;
   } catch (error: any) {
     console.log(`Error incrementing likes ${error.message}`);
@@ -230,6 +223,7 @@ export async function addLikeToThread(userId: string, threadId: any) {
 export async function removeLikeFromThread(userId: string, threadId: any) {
   connectToDB();
   try {
+    threadId = removeQuotes(threadId);
     const user = await User.findOne({ id: userId });
     const { likes }: any = await Thread.findByIdAndUpdate(
       { _id: threadId },
@@ -237,6 +231,7 @@ export async function removeLikeFromThread(userId: string, threadId: any) {
       { new: true }
     ).lean();
 
+    revalidatePath(`/thread/${threadId}`);
     return likes;
   } catch (error: any) {
     console.log(`Error decrementing likes ${error.message}`);

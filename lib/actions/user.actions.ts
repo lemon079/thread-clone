@@ -5,6 +5,7 @@ import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
 import { SortOrder } from "mongoose";
 import Thread from "../models/thread.model";
+import { UserType } from "../types";
 
 interface PARAMS {
   userId: string;
@@ -45,7 +46,7 @@ export async function updateUser({
 export async function fetchUser(userId: string) {
   try {
     connectToDB();
-    const USER = await User.findOne({ id: userId }).populate({
+    const USER: UserType = await User.findOne({ id: userId }).populate({
       path: "threads",
       model: Thread,
       match: { parentId: null }, // so that the threads are only top-level aka threads not comments ( so that the length dont include the children)
@@ -65,10 +66,10 @@ export async function fetchUsers({
   sortBy = "desc",
 }: {
   userId: string;
-  searchString: string;
-  pageNumber: number;
-  pageSize: number;
-  sortBy: SortOrder;
+  searchString?: string;
+  pageNumber?: number;
+  pageSize?: number;
+  sortBy?: SortOrder;
 }) {
   try {
     connectToDB();
@@ -83,7 +84,7 @@ export async function fetchUsers({
       .limit(pageSize)
       .skip(skipAmount);
 
-    const users = await userQuery.exec();
+    const users: UserType[] = await userQuery.exec();
 
     const totalUsersCount = await User.countDocuments(userQuery);
 

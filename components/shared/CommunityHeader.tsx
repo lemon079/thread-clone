@@ -8,7 +8,7 @@ interface Props {
     communityBio?: string;
 }
 
-const CommunityHeader = ({ communityName, communityImageUrl, communityId, communityBio }: Props) => {
+const CommunityHeader = ({ communityName, communityImageUrl, communityBio }: Props) => {
     // Replace hyphens with spaces in communityBio
     const formattedBio = communityBio ? communityBio.replace(/-/g, ' ') : communityName;
 

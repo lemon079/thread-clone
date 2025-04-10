@@ -11,9 +11,10 @@ interface Props {
     username: string;
     imageUrl: string;
     personType?: string;
+    createdBy?: string;
 }
 
-const UserCard = ({ id, name, username, imageUrl, personType }: Props) => {
+const UserCard = ({ id, name, username, imageUrl, personType, createdBy }: Props) => {
     const router = useRouter();
 
     return (
@@ -27,17 +28,17 @@ const UserCard = ({ id, name, username, imageUrl, personType }: Props) => {
             </div>
 
             <div className='flex flex-row gap-5'>
-                {personType === "Community" &&
-                <Button className='user-card_btn !bg-red-500'>
-                    Delete
-                </Button>
+                {personType === "Community" && createdBy !== id &&
+                    < Button className='user-card_btn !bg-red-500'>
+                        Delete
+                    </Button>
                 }
                 <Button className='user-card_btn' onClick={() => router.push(`/profile/${id}`)}>
                     View
                 </Button>
             </div>
 
-        </article>
+        </article >
     )
 }
 

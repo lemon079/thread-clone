@@ -5,7 +5,6 @@ import ThreadsTab from "@/components/shared/ThreadsTab";
 import { profileTabs } from "@/constants";
 import { fetchThreadsReplies } from "@/lib/actions/thread.actions";
 import { fetchUser } from "@/lib/actions/user.actions";
-import { currentUser } from "@clerk/nextjs/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import Image from "next/image";
 import { redirect } from "next/navigation";
@@ -15,17 +14,16 @@ const page = async ({ params }: PageProps) => {
     const { id } = await params;
     if (!id) return null;
 
-    const user = await currentUser();
+
     const userInfo = await fetchUser(id);
     if (!userInfo.onboarded) redirect('/onboarding');
 
-    let replies = await fetchThreadsReplies(userInfo._id);
+    let replies = await fetchThreadsReplies((userInfo._id).toString());
 
     return (
         <section>
             <ProfileHeader
                 accountId={userInfo.id}
-                authUserId={user?.id || ""}
                 name={userInfo.name}
                 username={userInfo.username}
                 imageUrl={userInfo.image}
@@ -46,28 +44,27 @@ const page = async ({ params }: PageProps) => {
                     </TabsList>
                     <TabsContent value="threads" className="w-full text-light-1 mt-9">
                         <ThreadsTab
-                            currentUserId={user?.id || ""}
-                            accountId={userInfo.id}
                             accountType="User"
+                            currentUser={id}
+                            id={userInfo._id}
                         />
                     </TabsContent>
-                    <TabsContent value="replies" className="w-full text-light-1 mt-9">
+                    {/* <TabsContent value="replies" className="w-full text-light-1 mt-9">
                         {replies?.map(reply => (
                             <ThreadCard
-                                key={reply._id}
-                                id={reply._id}
-                                currentUserId={user?.id || ""}
+                                key={(reply._id)?.toString()}
                                 parentId={reply.parentId}
-                                content={reply.text}
+                                text={reply.text}
                                 author={reply.author}
                                 community={reply.community}
                                 createdAt={reply.createdAt}
-                                comments={reply.children}
+                                comments={reply.children ?? []}
                                 view="allThreads"
-                                noOfLikes={reply.likes.length}
+                                noOfLikes={(reply.likes ?? []).length}
+                                isLiked={(reply.likes ?? []).includes((userInfo._id))}
                             />
                         ))}
-                    </TabsContent>
+                    </TabsContent> */}
                     {/* <TabsContent value="tagged" className="w-full text-light-1">
                     </TabsContent> */}
                 </Tabs>

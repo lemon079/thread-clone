@@ -19,21 +19,20 @@ const threadSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-  ], // Missing comma was here
+  ],
 
   createdAt: {
     type: Date,
     default: Date.now,
   },
   parentId: {
-    // creating parentId in case this thread is a comment
     type: String,
     default: null,
   },
   children: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Thread", // recursion, one thread can have multiple threads as children
+      ref: "Thread",
     },
   ],
 });

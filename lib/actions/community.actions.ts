@@ -1,11 +1,12 @@
 "use server";
-import { FilterQuery, SortOrder } from "mongoose";
+import { FilterQuery, SortOrder, Types } from "mongoose";
 import Community from "@/lib/models/community.model";
 import Thread from "@/lib/models/thread.model";
 import User from "@/lib/models/user.model";
 /* eslint-disable */
 import { connectToDB } from "../mongoose";
 import { revalidatePath } from "next/cache";
+import { CommunityPopulated, CommunityType } from "../types";
 
 export async function createCommunity(
   id: string,
@@ -46,7 +47,7 @@ export async function fetchCommunityDetails(id: string) {
   try {
     connectToDB();
 
-    const communityDetails = await Community.findOne({ id })
+    const communityDetails: CommunityType = await Community.findOne({ id })
       .populate({ path: "createdBy", model: User, select: "name image id" })
       .populate({
         path: "threads",
@@ -66,18 +67,23 @@ export async function fetchCommunityDetails(id: string) {
   }
 }
 
-export async function fetchCommunityThreads(id: string) {
+export async function fetchCommunityThreads(id: Types.ObjectId) {
   try {
     connectToDB();
 
-    const communityThreads = await Community.findById(id).populate({
+    const community: CommunityType = await Community.findById(id).populate({
       path: "threads",
       model: Thread,
       populate: [
         {
+          path: "community",
+          model: Community,
+          select: "name image id _id",
+        },
+        {
           path: "author",
           model: User,
-          select: "name image id", // Select the "name" and "_id" fields from the "User" model
+          select: "name image id _id",
         },
         {
           path: "children",
@@ -85,13 +91,13 @@ export async function fetchCommunityThreads(id: string) {
           populate: {
             path: "author",
             model: User,
-            select: "image _id", // Select the "name" and "_id" fields from the "User" model
+            select: "name image _id id",
           },
         },
       ],
     });
 
-    return communityThreads;
+    return community.threads;
   } catch (error) {
     // Handle any errors
     console.error("Error fetching community threads:", error);
@@ -101,20 +107,13 @@ export async function fetchCommunityThreads(id: string) {
 
 export async function fetchCommunities({
   searchString = "",
-  pageNumber = 1,
-  pageSize = 20,
   sortBy = "desc",
 }: {
   searchString?: string;
-  pageNumber?: number;
-  pageSize?: number;
   sortBy?: SortOrder;
 }) {
   try {
     connectToDB();
-
-    // Calculate the number of communities to skip based on the page number and page size.
-    const skipAmount = (pageNumber - 1) * pageSize;
 
     // Create a case-insensitive regular expression for the provided search string.
     const regex = new RegExp(searchString, "i");
@@ -134,21 +133,12 @@ export async function fetchCommunities({
     const sortOptions = { createdAt: sortBy };
 
     // Create a query to fetch the communities based on the search and sort criteria.
-    const communitiesQuery = Community.find(query)
+    const communities: CommunityType[] = await Community.find(query)
       .sort(sortOptions)
-      .skip(skipAmount)
-      .limit(pageSize)
-      .populate("members");
+      .populate("members")
+      .exec();
 
-    // Count the total number of communities that match the search criteria (without pagination).
-    const totalCommunitiesCount = await Community.countDocuments(query);
-
-    const communities = await communitiesQuery.exec();
-
-    // Check if there are more communities beyond the current page.
-    const isNext = totalCommunitiesCount > skipAmount + communities.length;
-
-    return { communities, isNext };
+    return { communities };
   } catch (error) {
     console.error("Error fetching communities:", error);
     throw error;
