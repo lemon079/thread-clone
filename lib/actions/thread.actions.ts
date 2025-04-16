@@ -120,7 +120,7 @@ export async function addCommentToThread({
 }: {
   commentText: string;
   userId: string;
-  threadId: string;
+  threadId: Types.ObjectId | string;
   path: string;
   communityId: string | null;
 }) {
@@ -151,7 +151,7 @@ export async function addCommentToThread({
     await originalThread.save();
 
     // revalidate the path
-    revalidatePath(path);
+    revalidatePath("/thread/[id]");
     return commentThread;
   } catch (error: any) {
     console.log(`Error Adding Comment ${error.message}`);

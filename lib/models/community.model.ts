@@ -16,10 +16,6 @@ const communitySchema = new Schema(
     image: {
       type: String,
     },
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     threads: [
       {
         type: Schema.Types.ObjectId,
@@ -32,6 +28,16 @@ const communitySchema = new Schema(
         ref: "User",
       },
     ],
+    requests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     createdAt: {
       type: Date,
       default: Date.now,

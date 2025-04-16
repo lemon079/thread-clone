@@ -2,11 +2,14 @@ import { Types } from "mongoose";
 
 export interface UserPopulated {
   id: string;
+  _id: Types.ObjectId;
   name: string;
   image: string;
+  username: string;
 }
 
 export interface CommunityPopulated {
+  id: string;
   _id: Types.ObjectId;
   name: string;
   image: string;
@@ -35,6 +38,7 @@ export interface CommunityType {
   image: string;
   name: string;
   username?: string;
+  requests: string[];
 }
 
 export interface ThreadType {

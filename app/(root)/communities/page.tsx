@@ -4,10 +4,10 @@ import { currentUser } from '@clerk/nextjs/server';
 import React from 'react'
 
 const page = async () => {
-    const user = currentUser();
+    const user = await currentUser();
     if (!user) return null;
 
-    const { communities } = await fetchCommunities({});
+    const communities = await fetchCommunities();
 
     return (
         <>
@@ -16,18 +16,16 @@ const page = async () => {
                 {communities.length === 0 ? (
                     <p className='no-result'>No Community</p>
                 ) : (
-                    <>
-                        {communities?.map((community) => (
-                            <CommunityCard
-                                key={community.id}
-                                id={community.id}
-                                name={community.name}
-                                imgUrl={community.image}
-                                bio={community.bio}
-                                members={community.members}
-                            />
-                        ))}
-                    </>
+                    communities?.map((community) => (
+                        <CommunityCard
+                            key={community.id}
+                            id={community.id}
+                            name={community.name}
+                            imgUrl={community.image}
+                            bio={community.bio}
+                            members={community.members}
+                        />
+                    ))
                 )}
             </section>
         </>

@@ -10,14 +10,15 @@ import Image from 'next/image';
 import { addCommentToThread } from '@/lib/actions/thread.actions';
 import { usePathname } from 'next/navigation';
 import { useOrganization } from '@clerk/nextjs';
+import { Types } from 'mongoose';
 
 interface Props {
-    threadId: string,
+    _id: Types.ObjectId | string,
     currentUserImage: string,
     currentUserId: string
 }
 
-const Comment = ({ threadId, currentUserId, currentUserImage }: Props) => {
+const Comment = ({ _id, currentUserId, currentUserImage }: Props) => {
 
     const path = usePathname();
     const { organization } = useOrganization();
@@ -33,11 +34,11 @@ const Comment = ({ threadId, currentUserId, currentUserImage }: Props) => {
         const threadObject = {
             commentText: values.thread,
             userId: currentUserId,
-            threadId: threadId,
+            threadId: _id,
             communityId: organization ? organization.id : null,
-            path
+            path: "/thread"
         }
-        const comment = await addCommentToThread(threadObject);
+        await addCommentToThread(threadObject);
         form.reset();
     }
 

@@ -2,10 +2,11 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import {
-  addMemberToCommunity,
+  addUserToCommunity,
   createCommunity,
   deleteCommunity,
   removeUserFromCommunity,
+  updateCommunityInfo,
 } from "@/lib/actions/community.actions";
 import { NextResponse } from "next/server";
 
@@ -60,24 +61,26 @@ export async function POST(req: Request) {
 
   if (eventType === "organization.created") {
     const { id: communityId, name, image_url, created_by, slug } = evt.data;
-    const community = await createCommunity(
+
+    const createdCommunity = await createCommunity(
       communityId,
       name,
-      image_url,
-      created_by,
+      image_url as string,
+      created_by as string | undefined,
       slug
     );
-    console.log("Created Community :", community);
+
+    console.log("Created Community :", createdCommunity);
 
     return NextResponse.json({
       message: "Community created",
-      community: community,
+      community: createdCommunity,
     });
   }
 
   if (eventType === "organization.deleted") {
     const { id: communityId } = evt.data;
-    const deletedCommunity = await deleteCommunity(communityId);
+    const deletedCommunity = await deleteCommunity(communityId as string);
 
     console.log("Deleted Community :", deletedCommunity);
 
@@ -87,16 +90,21 @@ export async function POST(req: Request) {
     });
   }
 
+  if (eventType === "organization.updated") {
+    const { id: communityId, image_url, name } = evt.data;
+    const updatedCommunity = updateCommunityInfo(communityId, name, image_url);
+
+    NextResponse.json({
+      message: "Community deleted",
+      updatedCommunity: updatedCommunity,
+    });
+  }
 
   if (eventType === "organizationMembership.created") {
     const { organization, public_user_data } = evt?.data;
 
-    // when ever the invited user accepts the invite, that user wll also be added in the db using action below
-    const community = await addMemberToCommunity(
-      organization.id,
-      public_user_data.user_id
-    );
-
+    // whenever the invited user accepts the invite, that user wll also be added in the db using action below
+    await addUserToCommunity(organization.id, public_user_data.user_id);
     return NextResponse.json({
       message: "Member added Successfully",
     });
