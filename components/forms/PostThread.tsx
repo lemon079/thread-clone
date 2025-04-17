@@ -11,19 +11,14 @@ import {
     FormMessage
 } from "@/components/ui/form"
 import { Textarea } from "../ui/textarea"
-import { usePathname } from "next/navigation"
 import { ThreadValidation } from "@/lib/validations/thread"
 import { Button } from '@/components/ui/button'
 import { createThread } from "@/lib/actions/thread.actions"
-import { useRouter } from "next/navigation"
 import { useOrganization } from "@clerk/nextjs"
-
 
 const PostThread = ({ userId }: { userId: string }) => {
     // this userId is from db ObjectId ( _id) not a clerk id   
 
-    const path = usePathname(); // returns the current path
-    const router = useRouter();
     const { organization } = useOrganization();
     const form = useForm<z.infer<typeof ThreadValidation>>({
         resolver: zodResolver(ThreadValidation),
@@ -38,10 +33,7 @@ const PostThread = ({ userId }: { userId: string }) => {
             text: values.thread,
             author: userId,
             communityId: organization?.id ? organization.id : null,
-            path
-        });
-
-        router.push('/');
+        })
     }
 
     return (

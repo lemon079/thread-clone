@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
-import { SortOrder } from "mongoose";
+import { SortOrder, Types } from "mongoose";
 import Thread from "../models/thread.model";
 import { UserType } from "../types";
 
@@ -96,7 +96,7 @@ export async function fetchUsers({
   }
 }
 
-export async function getActivity(userId: string) {
+export async function getActivity(userId: Types.ObjectId) {
   try {
     connectToDB();
 

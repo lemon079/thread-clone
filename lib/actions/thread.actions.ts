@@ -8,17 +8,18 @@ import mongoose, { Types } from "mongoose";
 import { removeQuotes } from "../utils";
 import Community from "../models/community.model";
 import { ThreadType } from "../types";
+import { redirect } from "next/navigation";
 
 export async function createThread({
   text,
   author,
   communityId,
-  path,
+  path = "/",
 }: {
   text: string;
   author: string;
   communityId: string | null;
-  path: string;
+  path?: string;
 }) {
   author = removeQuotes(author);
   connectToDB();
@@ -61,6 +62,7 @@ export async function createThread({
   } catch (error: any) {
     console.log(`Error Creating Thread ${error.message}`);
   }
+  redirect("/");
 }
 
 export async function fetchThread() {

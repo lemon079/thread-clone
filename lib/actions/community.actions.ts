@@ -1,12 +1,13 @@
 /* eslint-disable */
 "use server";
-import { Document, Types } from "mongoose";
+import { Types } from "mongoose";
 import Community from "@/lib/models/community.model";
 import Thread from "@/lib/models/thread.model";
 import User from "@/lib/models/user.model";
 import { connectToDB } from "../mongoose";
 import { revalidatePath } from "next/cache";
 import { CommunityType } from "../types";
+import { redirect } from "next/navigation";
 
 export async function fetchCommunities() {
   try {
@@ -32,6 +33,7 @@ export async function createCommunity(
   createdBy: string | undefined,
   slug: string
 ) {
+  let createdCommunity;
   try {
     connectToDB();
 
@@ -40,7 +42,7 @@ export async function createCommunity(
 
     if (!user) throw new Error("User not found"); // Handle the case if the user with the id is not found
 
-    const createdCommunity = await Community.create({
+    createdCommunity = await Community.create({
       id,
       name,
       bio: slug,
@@ -57,8 +59,8 @@ export async function createCommunity(
   } catch (error) {
     // Handle any errors
     console.error("Error creating community:", error);
-    throw error;
   }
+  redirect(`/communities/${createdCommunity?.id}`);
 }
 
 export async function updateCommunityInfo(
@@ -120,8 +122,8 @@ export async function deleteCommunity(communityId: string) {
     return { message: "Community and associated data deleted successfully." };
   } catch (error) {
     console.error("Error deleting community: ", error);
-    throw new Error("Failed to delete the community");
   }
+  redirect(`/communities`);
 }
 
 export async function fetchCommunity(id: string) {
@@ -305,7 +307,7 @@ export async function RequestToJoinCommunity(
     community.requests.push(_userId);
     await community.save();
 
-    revalidatePath(`/communities/${communityId}`);
+    revalidatePath(`/communities/`);
 
     return {
       _id: _userId.toString(),
@@ -327,7 +329,7 @@ export async function removeUserFromCommunityRequest(
 
     const user = await User.findOne({ id: userId });
 
-    const updatedCommunity = await Community.findOneAndUpdate(
+    await Community.findOneAndUpdate(
       { id: communityId },
       {
         $pull: { requests: user._id },

@@ -20,7 +20,7 @@ const page = async ({ params }: PageProps) => {
   const { id } = await params;
 
   const communityDetails = await fetchCommunity(id);
-  const requests = communityDetails.requests.map((member: any) => member._id.toString());
+  const requests = communityDetails?.requests.map((member: any) => member._id.toString());
 
   if (!communityDetails) return null;
 

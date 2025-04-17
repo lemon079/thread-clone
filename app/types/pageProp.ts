@@ -1,5 +1,3 @@
 export interface PageProps {
-    params: {
-        id: string;
-    };
-};
+  params: Promise<{ id: string }>;
+}
