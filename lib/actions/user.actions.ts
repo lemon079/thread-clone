@@ -6,6 +6,7 @@ import { connectToDB } from "../mongoose";
 import { SortOrder, Types } from "mongoose";
 import Thread from "../models/thread.model";
 import { UserType } from "../types";
+import { getCache, setCache, invalidateCache, CacheKeys } from "../redis";
 
 interface PARAMS {
   userId: string;
@@ -24,7 +25,7 @@ export async function updateUser({
   image,
   path,
 }: PARAMS): Promise<void> {
-  connectToDB();
+  await connectToDB();
 
   try {
     await User.findOneAndUpdate(
@@ -32,8 +33,11 @@ export async function updateUser({
         id: userId,
       },
       { username: username.toLowerCase(), name, bio, image, onboarded: true },
-      { upsert: true } // upsert-- update and insert, update something if exist or insert something if dont exist
+      { upsert: true }
     );
+
+    // Invalidate user cache on update
+    await invalidateCache(CacheKeys.user(userId));
 
     if (path === "/profile/edit") {
       revalidatePath(path);
@@ -45,12 +49,24 @@ export async function updateUser({
 
 export async function fetchUser(userId: string) {
   try {
-    connectToDB();
-    const USER: UserType = await User.findOne({ id: userId }).populate({
-      path: "threads",
-      model: Thread,
-      match: { parentId: null }, // so that the threads are only top-level aka threads not comments ( so that the length dont include the children)
-    });
+    // Check cache first
+    const cacheKey = CacheKeys.user(userId);
+    const cached = await getCache<UserType>(cacheKey);
+    if (cached) return cached;
+
+    await connectToDB();
+    const USER = await User.findOne({ id: userId })
+      .populate({
+        path: "threads",
+        model: Thread,
+        match: { parentId: null },
+      })
+      .lean<UserType>();
+
+    // Cache for 5 minutes
+    if (USER) {
+      await setCache(cacheKey, USER, 300);
+    }
 
     return USER;
   } catch (error: any) {
@@ -72,25 +88,42 @@ export async function fetchUsers({
   sortBy?: SortOrder;
 }) {
   try {
-    connectToDB();
+    // Check cache first (only for non-search queries)
+    const cacheKey = CacheKeys.usersList(pageNumber, searchString);
+    if (!searchString) {
+      const cached = await getCache<{ users: UserType[]; isNext: boolean }>(
+        cacheKey
+      );
+      if (cached) return cached;
+    }
+
+    await connectToDB();
     const skipAmount = (pageNumber - 1) * pageSize;
     const regex = new RegExp(searchString, "i");
 
-    const userQuery = User.find({
+    const query = {
       id: { $ne: userId },
       $or: [{ name: { $regex: regex } }, { username: { $regex: regex } }],
-    })
+    };
+
+    const users = await User.find(query)
       .sort({ createdAt: sortBy })
       .limit(pageSize)
-      .skip(skipAmount);
+      .skip(skipAmount)
+      .lean<UserType[]>();
 
-    const users: UserType[] = await userQuery.exec();
-
-    const totalUsersCount = await User.countDocuments(userQuery);
+    const totalUsersCount = await User.countDocuments(query);
 
     const isNext = totalUsersCount > skipAmount + users.length;
 
-    return { users, isNext };
+    const result = { users, isNext };
+
+    // Cache for 1 minute (only non-search queries)
+    if (!searchString) {
+      await setCache(cacheKey, result, 60);
+    }
+
+    return result;
   } catch (error: any) {
     throw new Error(`Failed to fetch users: ${error.message}`);
   }
@@ -98,13 +131,13 @@ export async function fetchUsers({
 
 export async function getActivity(userId: Types.ObjectId) {
   try {
-    connectToDB();
+    await connectToDB();
 
     // find all threads created by user
-    const userThreads = await Thread.find({ author: userId });
+    const userThreads = await Thread.find({ author: userId }).lean();
 
-    // iterate threads and concat all their child threads ( which are ids )
-    const childThreadIds = userThreads.reduce((acc, userThread) => {
+    // iterate threads and concat all their child threads (which are ids)
+    const childThreadIds = userThreads.reduce((acc: any[], userThread: any) => {
       return acc.concat(userThread.children);
     }, []);
 
@@ -112,7 +145,9 @@ export async function getActivity(userId: Types.ObjectId) {
     const replies = await Thread.find({
       _id: { $in: childThreadIds },
       author: { $ne: userId },
-    }).populate("author", "name image _id");
+    })
+      .populate("author", "name image _id")
+      .lean();
 
     return replies;
   } catch (error: any) {

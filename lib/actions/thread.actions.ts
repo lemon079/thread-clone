@@ -9,6 +9,13 @@ import { removeQuotes } from "../utils";
 import Community from "../models/community.model";
 import { ThreadType } from "../types";
 import { redirect } from "next/navigation";
+import {
+  getCache,
+  setCache,
+  invalidateCache,
+  invalidateCachePattern,
+  CacheKeys,
+} from "../redis";
 
 export async function createThread({
   text,
@@ -22,7 +29,7 @@ export async function createThread({
   path?: string;
 }) {
   author = removeQuotes(author);
-  connectToDB();
+  await connectToDB();
 
   try {
     let createdThread;
@@ -58,6 +65,10 @@ export async function createThread({
       { new: true }
     );
 
+    // Invalidate feed cache
+    await invalidateCache(CacheKeys.threadsFeed());
+    await invalidateCache(CacheKeys.userThreads(author));
+
     revalidatePath(path);
   } catch (error: any) {
     console.log(`Error Creating Thread ${error.message}`);
@@ -66,9 +77,14 @@ export async function createThread({
 }
 
 export async function fetchThread() {
-  connectToDB();
+  await connectToDB();
   try {
-    const threads: ThreadType[] = await Thread.find({
+    // Check cache first
+    const cacheKey = CacheKeys.threadsFeed();
+    const cached = await getCache<{ threads: ThreadType[] }>(cacheKey);
+    if (cached) return cached;
+
+    const threads = await Thread.find({
       parentId: { $in: [null, undefined] },
     })
       .sort({ createdAt: "desc" })
@@ -84,9 +100,14 @@ export async function fetchThread() {
       })
       .populate("author")
       .populate("community")
-      .exec();
+      .lean<ThreadType[]>();
 
-    return { threads };
+    const result = { threads };
+
+    // Cache for 1 minute
+    await setCache(cacheKey, result, 60);
+
+    return result;
   } catch (error: any) {
     console.log(`Error fetching Threads ${error.message}`);
     throw error;
@@ -94,18 +115,28 @@ export async function fetchThread() {
 }
 
 export async function fetchThreadById(threadId: string) {
-  connectToDB();
+  await connectToDB();
   try {
-    const thread: ThreadType = await Thread.findById(threadId)
+    // Check cache first
+    const cacheKey = CacheKeys.thread(threadId);
+    const cached = await getCache<ThreadType>(cacheKey);
+    if (cached) return cached;
+
+    const thread = await Thread.findById(threadId)
       .populate("author", "_id id name image")
       .populate({
         path: "children",
         model: Thread,
-        options: { sort: { createdAt: "desc" } }, // Sort children by createdAt in descending order
+        options: { sort: { createdAt: "desc" } },
         populate: { path: "author", model: User },
       })
       .populate("community")
-      .sort({ createdAt: "desc" });
+      .lean<ThreadType>();
+
+    // Cache for 2 minutes
+    if (thread) {
+      await setCache(cacheKey, thread, 120);
+    }
 
     return thread;
   } catch (error: any) {
@@ -126,7 +157,7 @@ export async function addCommentToThread({
   path: string;
   communityId: string | null;
 }) {
-  connectToDB();
+  await connectToDB();
   try {
     // removing quotes from the userId to convert into ObjectId ref
     userId = removeQuotes(userId);
@@ -152,6 +183,9 @@ export async function addCommentToThread({
     originalThread.children.push(commentThread._id);
     await originalThread.save();
 
+    // Invalidate thread cache
+    await invalidateCache(CacheKeys.thread(threadId.toString()));
+
     // revalidate the path
     revalidatePath("/thread/[id]");
     return commentThread;
@@ -162,9 +196,9 @@ export async function addCommentToThread({
 
 export async function fetchUserThreads(userId: Types.ObjectId) {
   try {
-    connectToDB();
+    await connectToDB();
 
-    const threads: ThreadType[] = await Thread.find({
+    const threads = await Thread.find({
       $or: [{ author: userId }],
     })
       .populate({
@@ -182,7 +216,8 @@ export async function fetchUserThreads(userId: Types.ObjectId) {
         path: "community",
         model: Community,
         select: "_id id name image",
-      });
+      })
+      .lean<ThreadType[]>();
 
     return threads;
   } catch (error: any) {
@@ -192,12 +227,14 @@ export async function fetchUserThreads(userId: Types.ObjectId) {
 
 export async function fetchThreadsReplies(userId: string) {
   try {
-    connectToDB();
+    await connectToDB();
 
-    const replies: ThreadType[] = await Thread.find({
+    const replies = await Thread.find({
       author: userId,
       parentId: { $ne: null },
-    }).populate("author", "name id _id image");
+    })
+      .populate("author", "name id _id image")
+      .lean<ThreadType[]>();
 
     return replies;
   } catch (error: any) {
@@ -206,7 +243,7 @@ export async function fetchThreadsReplies(userId: string) {
 }
 
 export async function addLikeToThread(userId: string, threadId: any) {
-  connectToDB();
+  await connectToDB();
   try {
     threadId = removeQuotes(threadId);
     const user = await User.findOne({ id: userId });
@@ -215,6 +252,10 @@ export async function addLikeToThread(userId: string, threadId: any) {
       { $addToSet: { likes: user._id } },
       { new: true }
     ).lean();
+
+    // Invalidate thread cache
+    await invalidateCache(CacheKeys.thread(threadId));
+
     revalidatePath(`/thread/${threadId}`);
     return likes;
   } catch (error: any) {
@@ -223,7 +264,7 @@ export async function addLikeToThread(userId: string, threadId: any) {
 }
 
 export async function removeLikeFromThread(userId: string, threadId: any) {
-  connectToDB();
+  await connectToDB();
   try {
     threadId = removeQuotes(threadId);
     const user = await User.findOne({ id: userId });
@@ -232,6 +273,9 @@ export async function removeLikeFromThread(userId: string, threadId: any) {
       { $pull: { likes: user._id } },
       { new: true }
     ).lean();
+
+    // Invalidate thread cache
+    await invalidateCache(CacheKeys.thread(threadId));
 
     revalidatePath(`/thread/${threadId}`);
     return likes;

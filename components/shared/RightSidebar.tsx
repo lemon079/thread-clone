@@ -1,6 +1,5 @@
 import { fetchUsers } from "@/lib/actions/user.actions";
 import { currentUser } from "@clerk/nextjs/server";
-import React from "react";
 import { fetchCommunities } from "@/lib/actions/community.actions";
 import Link from "next/link";
 import Image from "next/image";

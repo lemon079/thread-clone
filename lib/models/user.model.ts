@@ -34,6 +34,10 @@ const userSchema = new Schema({
   ],
 });
 
+userSchema.index({ id: 1 }); // Primary lookup
+userSchema.index({ username: 1 }); // Search
+userSchema.index({ createdAt: -1 }); // Sorting
+
 const User = mongoose.models.User || model("User", userSchema);
 
 export default User;

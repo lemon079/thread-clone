@@ -6,7 +6,7 @@ import React from 'react'
 
 const error = () => {
     return (
-        <div className='h-screen w-screen flex flex-col items-center justify-center gap-y-4'>
+        <div className='flex flex-col items-center justify-center gap-y-4'>
             <TriangleAlertIcon className='size-6' />
             <p className='text-sm'>Something Went Wrong</p>
             <Button asChild variant={"secondary"} size={"lg"} className='font-bold'>

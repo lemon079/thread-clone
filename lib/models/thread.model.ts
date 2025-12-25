@@ -37,6 +37,10 @@ const threadSchema = new Schema({
   ],
 });
 
+// thread.model.ts  
+threadSchema.index({ author: 1, createdAt: -1 }); // User's threads
+threadSchema.index({ parentId: 1 }); // Comments lookup
+
 const Thread = mongoose.models.Thread || model("Thread", threadSchema);
 
 export default Thread;

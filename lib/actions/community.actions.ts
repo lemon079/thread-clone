@@ -8,16 +8,32 @@ import { connectToDB } from "../mongoose";
 import { revalidatePath } from "next/cache";
 import { CommunityType } from "../types";
 import { redirect } from "next/navigation";
+import {
+  getCache,
+  setCache,
+  invalidateCache,
+  CacheKeys,
+} from "../redis";
 
 export async function fetchCommunities() {
   try {
-    connectToDB();
+    await connectToDB();
 
-    const communities: CommunityType[] = await Community.find({}).populate({
-      path: "members",
-      model: User,
-      select: "name image id _id",
-    });
+    // Check cache first
+    const cacheKey = CacheKeys.communities();
+    const cached = await getCache<CommunityType[]>(cacheKey);
+    if (cached) return cached;
+
+    const communities = await Community.find({})
+      .populate({
+        path: "members",
+        model: User,
+        select: "name image id _id",
+      })
+      .lean<CommunityType[]>();
+
+    // Cache for 2 minutes
+    await setCache(cacheKey, communities, 120);
 
     return communities;
   } catch (error) {
@@ -35,12 +51,12 @@ export async function createCommunity(
 ) {
   let createdCommunity;
   try {
-    connectToDB();
+    await connectToDB();
 
     // Find the user with the provided unique id
     const user = await User.findOne({ id: createdBy });
 
-    if (!user) throw new Error("User not found"); // Handle the case if the user with the id is not found
+    if (!user) throw new Error("User not found");
 
     createdCommunity = await Community.create({
       id,
@@ -53,11 +69,14 @@ export async function createCommunity(
     // Update User model
     user.communities.push(createdCommunity._id);
     await user.save();
+
+    // Invalidate communities cache
+    await invalidateCache(CacheKeys.communities());
+
     console.log(createdCommunity);
 
     return createdCommunity;
   } catch (error) {
-    // Handle any errors
     console.error("Error creating community:", error);
   }
   redirect(`/communities/${createdCommunity?.id}`);
@@ -69,9 +88,8 @@ export async function updateCommunityInfo(
   image: string | undefined
 ) {
   try {
-    connectToDB();
+    await connectToDB();
 
-    // Find the community by its _id and update the information
     const updatedCommunity = await Community.findOneAndUpdate(
       { id: communityId },
       { name, image },
@@ -82,9 +100,12 @@ export async function updateCommunityInfo(
       throw new Error("Community not found");
     }
 
+    // Invalidate community cache
+    await invalidateCache(CacheKeys.community(communityId));
+    await invalidateCache(CacheKeys.communities());
+
     return updatedCommunity;
   } catch (error) {
-    // Handle any errors
     console.error("Error updating community information:", error);
     throw error;
   }
@@ -92,9 +113,8 @@ export async function updateCommunityInfo(
 
 export async function deleteCommunity(communityId: string) {
   try {
-    await connectToDB(); // Ensure database connection
+    await connectToDB();
 
-    // Find the community by its ID and delete it
     const deletedCommunity = await Community.findOneAndDelete({
       id: communityId,
     });
@@ -110,13 +130,16 @@ export async function deleteCommunity(communityId: string) {
     });
 
     const userUpdatePromises = communityUsers.map(async (user) => {
-      user.communities.pull(deletedCommunity._id); // Remove the community from the user's list
+      user.communities.pull(deletedCommunity._id);
       return user.save();
     });
 
     await Promise.all(userUpdatePromises);
 
-    // Revalidate the homepage (or relevant paths)
+    // Invalidate caches
+    await invalidateCache(CacheKeys.community(communityId));
+    await invalidateCache(CacheKeys.communities());
+
     revalidatePath("/");
 
     return { message: "Community and associated data deleted successfully." };
@@ -128,9 +151,14 @@ export async function deleteCommunity(communityId: string) {
 
 export async function fetchCommunity(id: string) {
   try {
-    connectToDB();
+    await connectToDB();
 
-    const communityDetails: CommunityType = await Community.findOne({ id })
+    // Check cache first
+    const cacheKey = CacheKeys.community(id);
+    const cached = await getCache<CommunityType>(cacheKey);
+    if (cached) return cached;
+
+    const communityDetails = await Community.findOne({ id })
       .populate({ path: "createdBy", model: User, select: "name image id" })
       .populate({
         path: "threads",
@@ -142,10 +170,16 @@ export async function fetchCommunity(id: string) {
         },
       })
       .populate("members", "_id id name username image")
-      .populate("requests", "_id id name username image email");
+      .populate("requests", "_id id name username image email")
+      .lean<CommunityType>();
+
+    // Cache for 2 minutes
+    if (communityDetails) {
+      await setCache(cacheKey, communityDetails, 120);
+    }
+
     return communityDetails;
   } catch (error) {
-    // Handle any errors
     console.error("Error fetching community details:", error);
     throw error;
   }
@@ -153,36 +187,38 @@ export async function fetchCommunity(id: string) {
 
 export async function fetchCommunityThreads(id: Types.ObjectId) {
   try {
-    connectToDB();
+    await connectToDB();
 
-    const community: CommunityType = await Community.findById(id).populate({
-      path: "threads",
-      model: Thread,
-      options: { sort: { createdAt: -1 } }, // 👈 Sort threads by createdAt descending
-      populate: [
-        {
-          path: "community",
-          model: Community,
-          select: "name image id _id",
-        },
-        {
-          path: "author",
-          model: User,
-          select: "name image id _id",
-        },
-        {
-          path: "children",
-          model: Thread,
-          populate: {
+    const community = await Community.findById(id)
+      .populate({
+        path: "threads",
+        model: Thread,
+        options: { sort: { createdAt: -1 } },
+        populate: [
+          {
+            path: "community",
+            model: Community,
+            select: "name image id _id",
+          },
+          {
             path: "author",
             model: User,
-            select: "name image _id id",
+            select: "name image id _id",
           },
-        },
-      ],
-    });
+          {
+            path: "children",
+            model: Thread,
+            populate: {
+              path: "author",
+              model: User,
+              select: "name image _id id",
+            },
+          },
+        ],
+      })
+      .lean<CommunityType>();
 
-    return community.threads;
+    return community?.threads;
   } catch (error) {
     console.error("Error fetching community threads:", error);
     throw error;
@@ -193,34 +229,27 @@ export async function addUserToCommunity(communityId: string, userId: string) {
   try {
     await connectToDB();
 
-    // Find the community by its unique id
     const community = await Community.findOne({ id: communityId });
     if (!community) throw new Error("Community not found");
 
-    // Find the user by their unique id
     const user = await User.findOne({ id: userId });
     if (!user) throw new Error("User not found");
 
-    // Check if the user is already a member of the community
     if (community.members.includes(user._id)) {
       throw new Error("User is already a member of the community");
     }
 
-    // Add the user's _id to the members array in the community
     community.members.push(user._id);
-
-    // Add the community's _id to the communities array in the user
     user.communities.push(community._id);
 
-    // Save changes to the user
     await user.save();
 
-    // Remove the user's request from the community.requests array
     community.requests.pull(user._id);
-    // Save changes to the community
     await community.save();
 
-    // Revalidate the path
+    // Invalidate community cache
+    await invalidateCache(CacheKeys.community(communityId));
+
     revalidatePath(`/communities/${communityId}`);
 
     return {
@@ -237,11 +266,9 @@ export async function removeUserFromCommunity(
   communityId: string
 ) {
   try {
-    connectToDB();
+    await connectToDB();
 
-    // Fetch user and community objects
     const user = await User.findOne({ id: userId }, { _id: 1 });
-
     const community = await Community.findOne({ id: communityId });
 
     if (!user) {
@@ -268,16 +295,17 @@ export async function removeUserFromCommunity(
     );
 
     // Remove the thread if it is a comment
-    Thread.deleteMany({ children: { $in: user._id } });
+    await Thread.deleteMany({ children: { $in: user._id } });
 
-    // revalidate path
+    // Invalidate community cache
+    await invalidateCache(CacheKeys.community(communityId));
+
     revalidatePath(`/communities/${communityId}`);
 
     return {
       message: "Success",
     };
   } catch (error) {
-    // Handle any errors
     console.error(
       "Error removing user and their threads from community:",
       error
@@ -293,7 +321,6 @@ export async function RequestToJoinCommunity(
   try {
     await connectToDB();
 
-    // Find the user with the provided unique id
     const user = await User.findOne({ id: userId });
 
     if (!user) throw new Error("User not found");
@@ -302,10 +329,13 @@ export async function RequestToJoinCommunity(
 
     if (!community) throw new Error("Community not found");
 
-    const _userId = user._id; // dont remove it.
+    const _userId = user._id;
 
     community.requests.push(_userId);
     await community.save();
+
+    // Invalidate community cache
+    await invalidateCache(CacheKeys.community(communityId));
 
     revalidatePath(`/communities/`);
 
@@ -325,7 +355,7 @@ export async function removeUserFromCommunityRequest(
   userId: string
 ) {
   try {
-    connectToDB();
+    await connectToDB();
 
     const user = await User.findOne({ id: userId });
 
@@ -336,6 +366,10 @@ export async function removeUserFromCommunityRequest(
       },
       { new: true }
     );
+
+    // Invalidate community cache
+    await invalidateCache(CacheKeys.community(communityId));
+
     revalidatePath(`/communities/${communityId}`);
 
     return {
