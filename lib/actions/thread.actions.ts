@@ -247,19 +247,25 @@ export async function addLikeToThread(userId: string, threadId: any) {
   try {
     threadId = removeQuotes(threadId);
     const user = await User.findOne({ id: userId });
-    const { likes }: any = await Thread.findByIdAndUpdate(
+    if (!user) throw new Error("User not found");
+
+    await Thread.findByIdAndUpdate(
       { _id: threadId },
       { $addToSet: { likes: user._id } },
       { new: true }
-    ).lean();
+    );
 
     // Invalidate thread cache
     await invalidateCache(CacheKeys.thread(threadId));
+    await invalidateCache(CacheKeys.threadsFeed());
 
     revalidatePath(`/thread/${threadId}`);
-    return likes;
+    revalidatePath("/");
+
+    return { success: true };
   } catch (error: any) {
     console.log(`Error incrementing likes ${error.message}`);
+    return { success: false, error: error.message };
   }
 }
 
@@ -268,18 +274,24 @@ export async function removeLikeFromThread(userId: string, threadId: any) {
   try {
     threadId = removeQuotes(threadId);
     const user = await User.findOne({ id: userId });
-    const { likes }: any = await Thread.findByIdAndUpdate(
+    if (!user) throw new Error("User not found");
+
+    await Thread.findByIdAndUpdate(
       { _id: threadId },
       { $pull: { likes: user._id } },
       { new: true }
-    ).lean();
+    );
 
     // Invalidate thread cache
     await invalidateCache(CacheKeys.thread(threadId));
+    await invalidateCache(CacheKeys.threadsFeed());
 
     revalidatePath(`/thread/${threadId}`);
-    return likes;
+    revalidatePath("/");
+
+    return { success: true };
   } catch (error: any) {
     console.log(`Error decrementing likes ${error.message}`);
+    return { success: false, error: error.message };
   }
 }
